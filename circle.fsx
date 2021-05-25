@@ -46,44 +46,43 @@ let initWorld () =
 
     inputCommands, virtualState, physicalState
 
-let pollEvents (window: PollableWindow) ic =
+let applyEvent ic (event:SFML.Window.Event) =
     let keyMapping =
         [ Keyboard.Key.Up, Up
           Keyboard.Key.Left, Left
           Keyboard.Key.Right, Right
           Keyboard.Key.Down, Down ]
 
-    window.PollEvents(
-        ic,
-        fun event state ->
-            match event.Type with
-            | EventType.Closed -> { state with CloseWindow = true }
-            | EventType.KeyPressed ->
-                let action =
-                    keyMapping
-                    |> Seq.tryPick
-                        (fun (code, action) ->
-                            if code = event.Key.Code then
-                                Some action
-                            else
-                                None)
+    match event.Type with
+    | EventType.Closed -> { ic with CloseWindow = true }
+    | EventType.KeyPressed ->
+        let action =
+            keyMapping
+            |> Seq.tryPick
+                (fun (code, action) ->
+                    if code = event.Key.Code then
+                        Some action
+                    else
+                        None)
 
-                match action with
-                | Some _ as mp -> { ic with MovePosition = mp }
-                | None -> ic
-            | EventType.KeyReleased ->
-                let action =
-                    keyMapping
-                    |> Seq.tryPick
-                        (fun (code, action) ->
-                            if Keyboard.IsKeyPressed(code) then
-                                Some action
-                            else
-                                None)
+        match action with
+        | Some _ as mp -> { ic with MovePosition = mp }
+        | None -> ic
+    | EventType.KeyReleased ->
+        let action =
+            keyMapping
+            |> Seq.tryPick
+                (fun (code, action) ->
+                    if Keyboard.IsKeyPressed(code) then
+                        Some action
+                    else
+                        None)
 
-                { ic with MovePosition = action }
-            | _ -> state
-    )
+        { ic with MovePosition = action }
+        | _ -> ic
+
+let pollEvents (window: PollableWindow) ic =
+    window.PollEvents(ic, applyEvent)
 
 let updateVirtualState ic vs =
     let moveUnit = 4f
@@ -109,9 +108,11 @@ let rec loop (ic, vs, ps) =
     if not ps.Window.IsOpen then
         ()
     else
-        let ic = pollEvents ps.Window ic
+        let ic = ps.Window.PollEvents(ic, applyEvent)
         let vs = updateVirtualState ic vs
         let ps = updatePhysicalState vs ps
+
+        if ic.CloseWindow then ps.Window.Close()
 
         ps.Window.Clear()
         ps.Window.Draw(ps.Shape)
