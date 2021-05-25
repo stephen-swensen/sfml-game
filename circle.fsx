@@ -54,7 +54,9 @@ let initState () =
       ConfigState = { MoveUnit = 4.f } }
 
 let rec loop state =
-    let { EventState = eventState ; ConfigState = configState } = state
+    let { EventState = eventState
+          ConfigState = configState } =
+        state
 
     if not window.IsOpen then
         ()
@@ -94,10 +96,14 @@ let rec loop state =
             )
 
         match eventState.PressedKey with
-        | Keyboard.Key.Up -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - configState.MoveUnit)
-        | Keyboard.Key.Left -> shape.Position <- new Vector2f(shape.Position.X - configState.MoveUnit, shape.Position.Y)
-        | Keyboard.Key.Down -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y + configState.MoveUnit)
-        | Keyboard.Key.Right -> shape.Position <- new Vector2f(shape.Position.X + configState.MoveUnit, shape.Position.Y)
+        | Keyboard.Key.Up ->
+            shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - configState.MoveUnit)
+        | Keyboard.Key.Left ->
+            shape.Position <- new Vector2f(shape.Position.X - configState.MoveUnit, shape.Position.Y)
+        | Keyboard.Key.Down ->
+            shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y + configState.MoveUnit)
+        | Keyboard.Key.Right ->
+            shape.Position <- new Vector2f(shape.Position.X + configState.MoveUnit, shape.Position.Y)
         | _ -> ()
 
         window.Clear()
@@ -105,4 +111,4 @@ let rec loop state =
         window.Display()
         loop { state with EventState = eventState }
 
-loop (initState())
+loop (initState ())
