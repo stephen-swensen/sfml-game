@@ -61,11 +61,12 @@ while window.IsOpen do
             | _ ->
                 state)
 
+    let moveUnit = 2.f
     match eventState.PressedKey with
-    | Keyboard.Key.Up    -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - 1f)
-    | Keyboard.Key.Left  -> shape.Position <- new Vector2f(shape.Position.X - 1f, shape.Position.Y)
-    | Keyboard.Key.Down  -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y + 1f)
-    | Keyboard.Key.Right -> shape.Position <- new Vector2f(shape.Position.X + 1f, shape.Position.Y)
+    | Keyboard.Key.Up    -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - moveUnit)
+    | Keyboard.Key.Left  -> shape.Position <- new Vector2f(shape.Position.X - moveUnit, shape.Position.Y)
+    | Keyboard.Key.Down  -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y + moveUnit)
+    | Keyboard.Key.Right -> shape.Position <- new Vector2f(shape.Position.X + moveUnit, shape.Position.Y)
     | _ -> ()
 
     window.Clear()
