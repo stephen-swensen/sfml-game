@@ -63,7 +63,7 @@ while window.IsOpen do
             | _ ->
                 state)
 
-    let moveUnit = 2.f
+    let moveUnit = 4.f
     match eventState.PressedKey with
     | Keyboard.Key.Up    -> shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - moveUnit)
     | Keyboard.Key.Left  -> shape.Position <- new Vector2f(shape.Position.X - moveUnit, shape.Position.Y)
