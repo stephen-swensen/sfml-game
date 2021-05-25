@@ -1,5 +1,7 @@
 #load "refs.fsx"
 
+// originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
+
 open SFML.System
 open SFML.Graphics
 open SFML.Window
