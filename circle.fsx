@@ -1,4 +1,5 @@
 #load "refs.fsx"
+#load "PollableWindow.fsx"
 
 // originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
 
@@ -6,109 +7,115 @@ open SFML.System
 open SFML.Graphics
 open SFML.Window
 
-type FWindow(videoMode: VideoMode, title: string) =
-    inherit RenderWindow(videoMode, title)
+type MoveAction =
+    | Up
+    | Down
+    | Left
+    | Right
 
-    member _.PollEvent() =
-        let mutable event = SFML.Window.Event()
+type InputCommands =
+    { MovePosition: MoveAction option
+      CloseWindow: bool }
 
-        if base.PollEvent(&event) then
-            let event' = event
-            Some(event')
-        else
-            None
+type VirtualState = { Position: Vector2f }
 
-    member this.PollEvents(state, f) =
-        let rec loop (event: SFML.Window.Event option) state =
-            match event with
-            | None -> state
-            | Some (event) ->
-                let state = f event state
-                loop (this.PollEvent()) state
+type PhysicalState =
+    { Window: PollableWindow
+      Shape: CircleShape }
 
-        loop (this.PollEvent()) state
+type World = InputCommands * VirtualState * PhysicalState
 
-let window =
-    new FWindow(new VideoMode(400u, 400u), "SFML works!")
+let initWorld () =
+    let inputCommands =
+        { MovePosition = None
+          CloseWindow = false }
 
-window.SetVerticalSyncEnabled(true)
-window.SetFramerateLimit(60u)
+    let virtualState = { Position = Vector2f(0f, 0f) }
 
-let shape =
-    new CircleShape(10.0f, FillColor = Color.Green)
+    let physicalState =
+        let window =
+            new PollableWindow(new VideoMode(800u, 600u), "Circle Me Timbers!")
 
-type EventState =
-    { PressedKey: Keyboard.Key
-      CloseRequested: bool }
+        window.SetVerticalSyncEnabled(true)
+        window.SetFramerateLimit(60u)
 
-type ConfigState = { MoveUnit: float32 }
+        let shape =
+            new CircleShape(10.0f, FillColor = Color.Green)
 
-type State =
-    { EventState: EventState
-      ConfigState: ConfigState }
+        { Window = window; Shape = shape }
 
-let initState () =
-    { EventState =
-          { PressedKey = Keyboard.Key.Unknown
-            CloseRequested = false }
-      ConfigState = { MoveUnit = 4.f } }
+    inputCommands, virtualState, physicalState
 
-let rec loop state =
-    let { EventState = eventState
-          ConfigState = configState } =
-        state
+let pollEvents (window: PollableWindow) ic =
+    let keyMapping =
+        [ Keyboard.Key.Up, Up
+          Keyboard.Key.Left, Left
+          Keyboard.Key.Right, Right
+          Keyboard.Key.Down, Down ]
 
-    if not window.IsOpen then
+    window.PollEvents(
+        ic,
+        fun event state ->
+            match event.Type with
+            | EventType.Closed -> { state with CloseWindow = true }
+            | EventType.KeyPressed ->
+                let action =
+                    keyMapping
+                    |> Seq.tryPick
+                        (fun (code, action) ->
+                            if code = event.Key.Code then
+                                Some action
+                            else
+                                None)
+
+                match action with
+                | Some _ as mp -> { ic with MovePosition = mp }
+                | None -> ic
+            | EventType.KeyReleased ->
+                let action =
+                    keyMapping
+                    |> Seq.tryPick
+                        (fun (code, action) ->
+                            if Keyboard.IsKeyPressed(code) then
+                                Some action
+                            else
+                                None)
+
+                { ic with MovePosition = action }
+            | _ -> state
+    )
+
+let updateVirtualState ic vs =
+    let moveUnit = 4f
+    let pos = vs.Position
+
+    match ic.MovePosition with
+    | Some action ->
+        let pos =
+            match action with
+            | Up -> new Vector2f(pos.X, pos.Y - moveUnit)
+            | Left -> new Vector2f(pos.X - moveUnit, pos.Y)
+            | Down -> new Vector2f(pos.X, pos.Y + 4f)
+            | Right -> new Vector2f(pos.X + moveUnit, pos.Y)
+
+        { vs with Position = pos }
+    | None -> vs
+
+let updatePhysicalState vs ps =
+    ps.Shape.Position <- vs.Position
+    ps
+
+let rec loop (ic, vs, ps) =
+    if not ps.Window.IsOpen then
         ()
     else
-        let eventState =
-            let moveKeys =
-                [ Keyboard.Key.Up
-                  Keyboard.Key.Left
-                  Keyboard.Key.Down
-                  Keyboard.Key.Right ]
+        let ic = pollEvents ps.Window ic
+        let vs = updateVirtualState ic vs
+        let ps = updatePhysicalState vs ps
 
-            window.PollEvents(
-                eventState,
-                fun event state ->
-                    match event.Type with
-                    | EventType.Closed -> { state with CloseRequested = true }
-                    | EventType.KeyPressed ->
-                        let pressedKey =
-                            if moveKeys |> List.contains event.Key.Code then
-                                event.Key.Code
-                            else
-                                Keyboard.Key.Unknown
+        ps.Window.Clear()
+        ps.Window.Draw(ps.Shape)
+        ps.Window.Display()
+        loop (ic, vs, ps)
 
-                        { state with PressedKey = pressedKey }
-                    | EventType.KeyReleased ->
-                        let pressedKeys =
-                            List.filter (fun key -> Keyboard.IsKeyPressed(key)) moveKeys
-
-                        let pressedKey =
-                            if pressedKeys.IsEmpty then
-                                Keyboard.Key.Unknown
-                            else
-                                pressedKeys.Head
-
-                        { state with PressedKey = pressedKey }
-                    | _ -> state
-            )
-
-        match eventState.PressedKey with
-        | Keyboard.Key.Up ->
-            shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y - configState.MoveUnit)
-        | Keyboard.Key.Left ->
-            shape.Position <- new Vector2f(shape.Position.X - configState.MoveUnit, shape.Position.Y)
-        | Keyboard.Key.Down ->
-            shape.Position <- new Vector2f(shape.Position.X, shape.Position.Y + configState.MoveUnit)
-        | Keyboard.Key.Right ->
-            shape.Position <- new Vector2f(shape.Position.X + configState.MoveUnit, shape.Position.Y)
-        | _ -> ()
-
-        window.Clear()
-        window.Draw(shape)
-        window.Display()
-        loop { state with EventState = eventState }
-
-loop (initState ())
+loop (initWorld ())
