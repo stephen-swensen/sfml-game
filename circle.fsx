@@ -7,46 +7,40 @@ open SFML.System
 open SFML.Graphics
 open SFML.Window
 
-type MoveAction =
+type Direction =
     | Up
     | Down
     | Left
     | Right
 
 type InputCommands =
-    { MovePosition: MoveAction option
+    { ChangeDirection: Direction option
       CloseWindow: bool }
 
-type VirtualState = { Position: Vector2f }
+type Actor = { Position: Vector2f }
 
-type PhysicalState =
-    { Window: PollableWindow
-      Shape: CircleShape }
+type GameState = { Actor: Actor }
 
-type World = InputCommands * VirtualState * PhysicalState
+type World = PollableWindow * GameState * InputCommands
 
-let initWorld () =
-    let inputCommands =
-        { MovePosition = None
+///Create the World with a BIG BANG
+let bang () =
+    let window =
+        let window = new PollableWindow(new VideoMode(800u, 600u), "Circle Me Timbers!")
+        window.SetVerticalSyncEnabled(true)
+        window.SetFramerateLimit(120u)
+        window
+
+    let state = { Actor = { Position = Vector2f(0f,0f) } }
+
+    let commands =
+        { ChangeDirection = None
           CloseWindow = false }
 
-    let virtualState = { Position = Vector2f(0f, 0f) }
+    window, state, commands
 
-    let physicalState =
-        let window =
-            new PollableWindow(new VideoMode(800u, 600u), "Circle Me Timbers!")
-
-        window.SetVerticalSyncEnabled(true)
-        window.SetFramerateLimit(60u)
-
-        let shape =
-            new CircleShape(10.0f, FillColor = Color.Green)
-
-        { Window = window; Shape = shape }
-
-    inputCommands, virtualState, physicalState
-
-let applyEvent ic (event:SFML.Window.Event) =
+///Apply a single event to some existing command state, producing a new command state
+let applyEvent commands (event:Event) =
     let keyMapping =
         [ Keyboard.Key.Up, Up
           Keyboard.Key.Left, Left
@@ -54,7 +48,7 @@ let applyEvent ic (event:SFML.Window.Event) =
           Keyboard.Key.Down, Down ]
 
     match event.Type with
-    | EventType.Closed -> { ic with CloseWindow = true }
+    | EventType.Closed -> { commands with CloseWindow = true }
     | EventType.KeyPressed ->
         let action =
             keyMapping
@@ -66,8 +60,12 @@ let applyEvent ic (event:SFML.Window.Event) =
                         None)
 
         match action with
-        | Some _ as mp -> { ic with MovePosition = mp }
-        | None -> ic
+        | Some _ as mp ->
+            { commands with ChangeDirection = mp }
+        | None when event.Key.Code = Keyboard.Key.Escape ->
+            { commands with CloseWindow = true }
+        | None -> commands
+
     | EventType.KeyReleased ->
         let action =
             keyMapping
@@ -78,45 +76,46 @@ let applyEvent ic (event:SFML.Window.Event) =
                     else
                         None)
 
-        { ic with MovePosition = action }
-        | _ -> ic
+        { commands with ChangeDirection = action }
+        | _ -> commands
 
-let pollEvents (window: PollableWindow) ic =
-    window.PollEvents(ic, applyEvent)
+let pollEvents (window: PollableWindow) commands =
+    window.PollEvents(commands, applyEvent)
 
-let updateVirtualState ic vs =
+let calcNewPosition (pos: Vector2f) action =
     let moveUnit = 4f
-    let pos = vs.Position
+    match action with
+    | Up -> new Vector2f(pos.X, pos.Y - moveUnit)
+    | Left -> new Vector2f(pos.X - moveUnit, pos.Y)
+    | Down -> new Vector2f(pos.X, pos.Y + 4f)
+    | Right -> new Vector2f(pos.X + moveUnit, pos.Y)
 
-    match ic.MovePosition with
+let updateState commands state =
+    let pos = state.Actor.Position
+
+    match commands.ChangeDirection with
     | Some action ->
-        let pos =
-            match action with
-            | Up -> new Vector2f(pos.X, pos.Y - moveUnit)
-            | Left -> new Vector2f(pos.X - moveUnit, pos.Y)
-            | Down -> new Vector2f(pos.X, pos.Y + 4f)
-            | Right -> new Vector2f(pos.X + moveUnit, pos.Y)
+        let pos = calcNewPosition pos action
+        { state with Actor = { state.Actor with Position = pos } }
+    | None ->
+        state
 
-        { vs with Position = pos }
-    | None -> vs
+let drawState (window: PollableWindow) state =
+    window.Clear()
+    use circle =
+        new CircleShape(10.0f, FillColor = Color.Green, Position = state.Actor.Position)
+    window.Draw(circle)
+    window.Display()
 
-let updatePhysicalState vs ps =
-    ps.Shape.Position <- vs.Position
-    ps
-
-let rec loop (ic, vs, ps) =
-    if not ps.Window.IsOpen then
+let rec loop ((window, state, commands): World) =
+    if not window.IsOpen then
         ()
     else
-        let ic = ps.Window.PollEvents(ic, applyEvent)
-        let vs = updateVirtualState ic vs
-        let ps = updatePhysicalState vs ps
-
-        if ic.CloseWindow then ps.Window.Close()
-
-        ps.Window.Clear()
-        ps.Window.Draw(ps.Shape)
-        ps.Window.Display()
-        loop (ic, vs, ps)
-
-loop (initWorld ())
+        let commands = window.PollEvents(commands, applyEvent)
+        let state = updateState commands state
+        if commands.CloseWindow then
+            window.Close()
+        else
+            drawState window state
+            loop (window, state, commands)
+loop (bang ())
