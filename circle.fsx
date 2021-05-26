@@ -27,8 +27,9 @@ type World = PollableWindow * GameState * InputCommands
 let bang () =
     let window =
         let window = new PollableWindow(new VideoMode(800u, 600u), "Circle Me Timbers!")
-        window.SetVerticalSyncEnabled(true)
-        window.SetFramerateLimit(120u)
+        //per docs "Never use both setVerticalSyncEnabled and setFramerateLimit at the same time! They would badly mix and make things worse."
+        //window.SetVerticalSyncEnabled(true)
+        window.SetFramerateLimit(60u)
         window
 
     let state = { Actor = { Position = Vector2f(0f,0f) } }
