@@ -7,6 +7,8 @@ open SFML.System
 open SFML.Graphics
 open SFML.Window
 
+let inline (%%) n m = ((n % m) + m) % m
+
 type Direction =
     | Up
     | Down
@@ -27,6 +29,7 @@ type World = PollableWindow * GameState * InputCommands
 let bang () =
     let window =
         let window = new PollableWindow(new VideoMode(800u, 600u), "Circle Me Timbers!")
+        //https://www.sfml-dev.org/tutorials/2.5/window-window.php#controlling-the-framerate
         //per docs "Never use both setVerticalSyncEnabled and setFramerateLimit at the same time! They would badly mix and make things worse."
         //window.SetVerticalSyncEnabled(true)
         window.SetFramerateLimit(60u)
@@ -51,16 +54,16 @@ let applyEvent commands (event:Event) =
     match event.Type with
     | EventType.Closed -> { commands with CloseWindow = true }
     | EventType.KeyPressed ->
-        let action =
+        let direction =
             keyMapping
             |> Seq.tryPick
-                (fun (code, action) ->
+                (fun (code, direction) ->
                     if code = event.Key.Code then
-                        Some action
+                        Some direction
                     else
                         None)
 
-        match action with
+        match direction with
         | Some _ as mp ->
             { commands with ChangeDirection = mp }
         | None when event.Key.Code = Keyboard.Key.Escape ->
@@ -68,35 +71,39 @@ let applyEvent commands (event:Event) =
         | None -> commands
 
     | EventType.KeyReleased ->
-        let action =
+        let direction =
             keyMapping
             |> Seq.tryPick
-                (fun (code, action) ->
+                (fun (code, direction) ->
                     if Keyboard.IsKeyPressed(code) then
-                        Some action
+                        Some direction
                     else
                         None)
 
-        { commands with ChangeDirection = action }
+        { commands with ChangeDirection = direction }
         | _ -> commands
 
 let pollEvents (window: PollableWindow) commands =
     window.PollEvents(commands, applyEvent)
 
-let calcNewPosition (pos: Vector2f) action =
+let calcNewPosition (pos: Vector2f) direction (window_w, window_h) =
     let moveUnit = 4f
-    match action with
-    | Up -> new Vector2f(pos.X, pos.Y - moveUnit)
-    | Left -> new Vector2f(pos.X - moveUnit, pos.Y)
-    | Down -> new Vector2f(pos.X, pos.Y + 4f)
-    | Right -> new Vector2f(pos.X + moveUnit, pos.Y)
+    let pos =
+        match direction with
+        | Up -> Vector2f(pos.X, pos.Y - moveUnit)
+        | Left -> Vector2f(pos.X - moveUnit, pos.Y)
+        | Down -> Vector2f(pos.X, pos.Y + 4f)
+        | Right -> Vector2f(pos.X + moveUnit, pos.Y)
 
-let updateState commands state =
+    Vector2f(pos.X %% window_w, pos.Y %% window_h)
+
+
+let updateState commands state window_dim =
     let pos = state.Actor.Position
 
     match commands.ChangeDirection with
-    | Some action ->
-        let pos = calcNewPosition pos action
+    | Some direction ->
+        let pos = calcNewPosition pos direction window_dim
         { state with Actor = { state.Actor with Position = pos } }
     | None ->
         state
@@ -113,7 +120,7 @@ let rec loop ((window, state, commands): World) =
         ()
     else
         let commands = window.PollEvents(commands, applyEvent)
-        let state = updateState commands state
+        let state = updateState commands state (800f, 600f)
         if commands.CloseWindow then
             window.Close()
         else
