@@ -23,7 +23,8 @@ type Actor = { Position: Vector2f }
 
 type GameState =
     { Actor: Actor
-      WindowDimensions: uint * uint }
+      WindowDimensions: uint * uint
+      HudHeight: uint }
 
 type World = PollableWindow * GameState * InputCommands
 
@@ -31,7 +32,8 @@ type World = PollableWindow * GameState * InputCommands
 let bang () =
     let state =
         { Actor = { Position = Vector2f(0f, 0f) }
-          WindowDimensions = (800u, 600u) }
+          WindowDimensions = (800u, 600u)
+          HudHeight = 60u }
 
     let windowWidth, windowHeight = state.WindowDimensions
 
@@ -91,7 +93,7 @@ let applyEvent commands (event: Event) =
 
 let pollEvents (window: PollableWindow) commands = window.PollEvents(commands, applyEvent)
 
-let calcNewPosition (pos: Vector2f) direction (window_w, window_h) =
+let calcNewPosition (pos: Vector2f) direction (window_w, window_h) hudHeight =
     let moveUnit = 4f
 
     let pos =
@@ -101,7 +103,7 @@ let calcNewPosition (pos: Vector2f) direction (window_w, window_h) =
         | Down -> Vector2f(pos.X, pos.Y + 4f)
         | Right -> Vector2f(pos.X + moveUnit, pos.Y)
 
-    Vector2f(pos.X %% (float32 window_w), pos.Y %% (float32 window_h))
+    Vector2f(pos.X %% (float32 window_w), pos.Y %% (float32 (window_h - hudHeight)))
 
 
 let updateState commands state =
@@ -110,7 +112,7 @@ let updateState commands state =
     match commands.ChangeDirection with
     | Some direction ->
         let pos =
-            calcNewPosition pos direction state.WindowDimensions
+            calcNewPosition pos direction state.WindowDimensions state.HudHeight
 
         { state with
               Actor = { state.Actor with Position = pos } }
@@ -123,6 +125,16 @@ let drawState (window: PollableWindow) state =
         new CircleShape(10.0f, FillColor = Color.Green, Position = state.Actor.Position)
 
     window.Draw(circle)
+
+    use hud =
+        new RectangleShape(
+            Vector2f((fst >> float32) state.WindowDimensions, float32 state.HudHeight),
+            FillColor = Color.Cyan,
+            Position = Vector2f(0f, ((snd>>float32) state.WindowDimensions) - (float32 state.HudHeight))
+        )
+
+    window.Draw(hud)
+
     window.Display()
 
 let rec loop ((window, state, commands): World) =
