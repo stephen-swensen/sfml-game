@@ -1,3 +1,3 @@
 circle:
-	dotnet fsi --optimize+ --tailcalls+ --debug- circle.fsx
+	dotnet fsi --optimize+ --tailcalls+ --debug- game.fsx
 
