@@ -107,7 +107,9 @@ let calcNewPosition (pos: Vector2f) direction (window_w, window_h) hudHeight =
         | Down -> Vector2f(pos.X, pos.Y + 4f)
         | Right -> Vector2f(pos.X + moveUnit, pos.Y)
 
-    let pos'' = Vector2f(pos'.X %% (float32 window_w), pos'.Y %% (float32 (window_h - hudHeight)))
+    let pos'' =
+        Vector2f(pos'.X %% (float32 window_w), pos'.Y %% (float32 (window_h - hudHeight)))
+
     pos'', pos' <> pos''
 
 let updateState commands state =
@@ -120,21 +122,23 @@ let updateState commands state =
 
         { state with
               Actor = { state.Actor with Position = pos }
-              WallCrossings = if wrapped then state.WallCrossings + 1u else state.WallCrossings }
+              WallCrossings =
+                  if wrapped then
+                      state.WallCrossings + 1u
+                  else
+                      state.WallCrossings }
     | None -> state
 
-type Fonts = {
-    DejaVuSansMono: Font
-}
+type Fonts = { DejaVuSansMono: Font }
 
 //todo: make this IDisposable?
-type Assets = {
-    Fonts: Fonts
-}
+type Assets = { Fonts: Fonts }
 
 let loadAssets () =
-    let sansMono = new Font("assets/fonts/truetype/dejavu/DejaVuSansMono.ttf")
-    { Fonts = { DejaVuSansMono = sansMono }}
+    let sansMono =
+        new Font("assets/fonts/truetype/dejavu/DejaVuSansMono.ttf")
+
+    { Fonts = { DejaVuSansMono = sansMono } }
 
 let drawState assets (window: PollableWindow) state =
     window.Clear()
@@ -144,7 +148,13 @@ let drawState assets (window: PollableWindow) state =
 
     window.Draw(circle)
 
-    let hudPos = Vector2f(0f, ((snd>>float32) state.WindowDimensions) - (float32 state.HudHeight))
+    let hudPos =
+        Vector2f(
+            0f,
+            ((snd >> float32) state.WindowDimensions)
+            - (float32 state.HudHeight)
+        )
+
     use hud =
         new RectangleShape(
             Vector2f((fst >> float32) state.WindowDimensions, float32 state.HudHeight),
@@ -155,10 +165,10 @@ let drawState assets (window: PollableWindow) state =
     window.Draw(hud)
 
     use hudText = new SFML.Graphics.Text()
+
     do
         hudText.Font <- assets.Fonts.DejaVuSansMono
-        hudText.DisplayedString <-
-            sprintf $"Wall Crossings: %u{state.WallCrossings}"
+        hudText.DisplayedString <- sprintf $"Wall Crossings: %u{state.WallCrossings}"
         hudText.CharacterSize <- 30u
         hudText.Position <- hudPos
         hudText.FillColor <- Color.Black
