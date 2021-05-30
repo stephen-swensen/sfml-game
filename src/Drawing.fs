@@ -8,8 +8,18 @@ module Drawing =
     let drawState assets (window: PollableWindow) state =
         window.Clear()
 
+        for enemy in state.Enemies do
+            use e =
+                new CircleShape(enemy.Radius, FillColor = enemy.Color, Position = enemy.Position)
+
+            window.Draw(e)
+
         use player =
-            new CircleShape(state.Player.Radius, FillColor = state.Player.Color, Position = state.Player.Position)
+            new CircleShape(
+                state.Player.Radius,
+                FillColor = state.Player.Color,
+                Position = state.Player.Position
+            )
 
         window.Draw(player)
 

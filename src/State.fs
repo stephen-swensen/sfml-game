@@ -3,24 +3,18 @@ namespace Swensen.SFML.Game
 open SFML.System
 open SFML.Graphics
 
-type Player = {
-    Position: Vector2f
-    Radius: float32
-    Color: Color }
-
-type Enemy = {
-    Position: Vector2f
-    Radius: float32
-    Color:Color }
+type Character =
+    { Position: Vector2f
+      Radius: float32
+      Color: Color }
 
 type GameState =
-    { Player: Player
-      Enemies: Enemy list
+    { Player: Character
+      Enemies: Character list
       WindowDimensions: uint * uint
       HudHeight: uint
       WallCrossings: uint
       EnemyCount: int }
-with
     member this.BoardDimensions =
         let wx, wy = this.WindowDimensions
         wx, wy - this.HudHeight
