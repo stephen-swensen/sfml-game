@@ -1,8 +1,4 @@
-[<AutoOpen>]
-module state_fsx
-
-#load "refs.fsx"
-#load "input.fsx"
+namespace Swensen.SFML.Game
 
 open SFML.System
 

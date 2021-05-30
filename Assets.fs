@@ -1,7 +1,4 @@
-[<AutoOpen>]
-module assets_fsx
-
-#load "refs.fsx"
+namespace Swensen.SFML.Game
 
 open SFML.Graphics
 

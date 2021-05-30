@@ -1,8 +1,4 @@
-[<AutoOpen>]
-module input_fsx
-
-#load "refs.fsx"
-#load "PollableWindow.fsx"
+namespace Swensen.SFML.Game
 
 open SFML.Window
 
