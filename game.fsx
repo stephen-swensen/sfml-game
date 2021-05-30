@@ -2,6 +2,7 @@
 #load "PollableWindow.fsx"
 #load "assets.fsx"
 #load "input.fsx"
+#load "state.fsx"
 
 // originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
 
@@ -9,22 +10,12 @@ open SFML.System
 open SFML.Graphics
 open SFML.Window
 
-let inline (%%) n m = ((n % m) + m) % m
-
-type Actor = { Position: Vector2f }
-
-type GameState =
-    { Actor: Actor
-      WindowDimensions: uint * uint
-      HudHeight: uint
-      WallCrossings: uint }
-
 type World = PollableWindow * GameState * InputCommands
 
 ///Create the World with a BIG BANG
 let bang () =
     let state =
-        { Actor = { Position = Vector2f(0f, 0f) }
+        { Player = { Position = Vector2f(0f, 0f) }
           WindowDimensions = (800u, 600u)
           HudHeight = 60u
           WallCrossings = 0u }
@@ -46,45 +37,11 @@ let bang () =
 
     window, state, commands
 
-///Calc new position from old position and directional movement
-///(new pos, true|false wrapped around window)
-let calcNewPosition (pos: Vector2f) direction (window_w, window_h) hudHeight =
-    let moveUnit = 4f
-
-    let pos' =
-        match direction with
-        | Up -> Vector2f(pos.X, pos.Y - moveUnit)
-        | Left -> Vector2f(pos.X - moveUnit, pos.Y)
-        | Down -> Vector2f(pos.X, pos.Y + 4f)
-        | Right -> Vector2f(pos.X + moveUnit, pos.Y)
-
-    let pos'' =
-        Vector2f(pos'.X %% (float32 window_w), pos'.Y %% (float32 (window_h - hudHeight)))
-
-    pos'', pos' <> pos''
-
-let updateState commands state =
-    let pos = state.Actor.Position
-
-    match commands.ChangeDirection with
-    | Some direction ->
-        let pos, wrapped =
-            calcNewPosition pos direction state.WindowDimensions state.HudHeight
-
-        { state with
-              Actor = { state.Actor with Position = pos }
-              WallCrossings =
-                  if wrapped then
-                      state.WallCrossings + 1u
-                  else
-                      state.WallCrossings }
-    | None -> state
-
 let drawState assets (window: PollableWindow) state =
     window.Clear()
 
     use circle =
-        new CircleShape(10.0f, FillColor = Color.Green, Position = state.Actor.Position)
+        new CircleShape(10.0f, FillColor = Color.Green, Position = state.Player.Position)
 
     window.Draw(circle)
 
@@ -124,7 +81,7 @@ let run () =
             ()
         else
             let commands = Input.pollEvents window commands
-            let state = updateState commands state
+            let state = State.update commands state
 
             if commands.CloseWindow then
                 window.Dispose()
