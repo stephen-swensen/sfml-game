@@ -1,6 +1,7 @@
 #load "refs.fsx"
 #load "PollableWindow.fsx"
 #load "assets.fsx"
+#load "input.fsx"
 
 // originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
 
@@ -9,16 +10,6 @@ open SFML.Graphics
 open SFML.Window
 
 let inline (%%) n m = ((n % m) + m) % m
-
-type Direction =
-    | Up
-    | Down
-    | Left
-    | Right
-
-type InputCommands =
-    { ChangeDirection: Direction option
-      CloseWindow: bool }
 
 type Actor = { Position: Vector2f }
 
@@ -54,47 +45,6 @@ let bang () =
           CloseWindow = false }
 
     window, state, commands
-
-///Apply a single event to some existing command state, producing a new command state
-let applyEvent commands (event: Event) =
-    let keyMapping =
-        [ Keyboard.Key.Up, Up
-          Keyboard.Key.Left, Left
-          Keyboard.Key.Right, Right
-          Keyboard.Key.Down, Down ]
-
-    match event.Type with
-    | EventType.Closed -> { commands with CloseWindow = true }
-    | EventType.KeyPressed ->
-        let direction =
-            keyMapping
-            |> Seq.tryPick
-                (fun (code, direction) ->
-                    if code = event.Key.Code then
-                        Some direction
-                    else
-                        None)
-
-        match direction with
-        | Some _ as mp -> { commands with ChangeDirection = mp }
-        | None when event.Key.Code = Keyboard.Key.Escape -> { commands with CloseWindow = true }
-        | None -> commands
-
-    | EventType.KeyReleased ->
-        let direction =
-            keyMapping
-            |> Seq.tryPick
-                (fun (code, direction) ->
-                    if Keyboard.IsKeyPressed(code) then
-                        Some direction
-                    else
-                        None)
-
-        { commands with
-              ChangeDirection = direction }
-    | _ -> commands
-
-let pollEvents (window: PollableWindow) commands = window.PollEvents(commands, applyEvent)
 
 ///Calc new position from old position and directional movement
 ///(new pos, true|false wrapped around window)
@@ -173,7 +123,7 @@ let run () =
         if not window.IsOpen then
             ()
         else
-            let commands = window.PollEvents(commands, applyEvent)
+            let commands = Input.pollEvents window commands
             let state = updateState commands state
 
             if commands.CloseWindow then
