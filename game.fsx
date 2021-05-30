@@ -1,5 +1,6 @@
 #load "refs.fsx"
 #load "PollableWindow.fsx"
+#load "assets.fsx"
 
 // originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
 
@@ -129,17 +130,6 @@ let updateState commands state =
                       state.WallCrossings }
     | None -> state
 
-type Fonts = { DejaVuSansMono: Font }
-
-//todo: make this IDisposable?
-type Assets = { Fonts: Fonts }
-
-let loadAssets () =
-    let sansMono =
-        new Font("assets/fonts/truetype/dejavu/DejaVuSansMono.ttf")
-
-    { Fonts = { DejaVuSansMono = sansMono } }
-
 let drawState assets (window: PollableWindow) state =
     window.Clear()
 
@@ -177,7 +167,7 @@ let drawState assets (window: PollableWindow) state =
     window.Display()
 
 let run () =
-    let assets = loadAssets ()
+    let assets = Assets.load ()
 
     let rec loop ((window, state, commands): World) =
         if not window.IsOpen then
