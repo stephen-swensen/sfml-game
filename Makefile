@@ -1,8 +1,8 @@
 run:
-	dotnet fsi --optimize+ --tailcalls+ --debug- game.fsx
+	dotnet run --project src/sfml.fsproj --tailcalls+ --debug-
 
 format:
-	dotnet fantomas .
+	dotnet fantomas src 
 
 
 
