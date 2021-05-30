@@ -8,10 +8,10 @@ module Drawing =
     let drawState assets (window: PollableWindow) state =
         window.Clear()
 
-        use circle =
-            new CircleShape(10.0f, FillColor = Color.Green, Position = state.Player.Position)
+        use player =
+            new CircleShape(state.Player.Radius, FillColor = state.Player.Color, Position = state.Player.Position)
 
-        window.Draw(circle)
+        window.Draw(player)
 
         let hudPos =
             Vector2f(

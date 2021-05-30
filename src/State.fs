@@ -1,20 +1,35 @@
 namespace Swensen.SFML.Game
 
 open SFML.System
+open SFML.Graphics
 
-type Player = { Position: Vector2f }
+type Player = {
+    Position: Vector2f
+    Radius: float32
+    Color: Color }
+
+type Enemy = {
+    Position: Vector2f
+    Radius: float32
+    Color:Color }
 
 type GameState =
     { Player: Player
+      Enemies: Enemy list
       WindowDimensions: uint * uint
       HudHeight: uint
-      WallCrossings: uint }
+      WallCrossings: uint
+      EnemyCount: int }
+with
+    member this.BoardDimensions =
+        let wx, wy = this.WindowDimensions
+        wx, wy - this.HudHeight
 
 module State =
 
     ///Calc new position from old position and directional movement
     ///(new pos, true|false wrapped around window)
-    let calcNewPosition (pos: Vector2f) direction (window_w, window_h) hudHeight =
+    let calcNewPosition (pos: Vector2f) direction (x, y) =
         let moveUnit = 4f
 
         let pos' =
@@ -25,7 +40,7 @@ module State =
             | Right -> Vector2f(pos.X + moveUnit, pos.Y)
 
         let pos'' =
-            Vector2f(pos'.X %% (float32 window_w), pos'.Y %% (float32 (window_h - hudHeight)))
+            Vector2f(pos'.X %% (float32 x), pos'.Y %% (float32 y))
 
         pos'', pos' <> pos''
 
@@ -35,7 +50,7 @@ module State =
         match commands.ChangeDirection with
         | Some direction ->
             let pos, wrapped =
-                calcNewPosition pos direction state.WindowDimensions state.HudHeight
+                calcNewPosition pos direction state.BoardDimensions
 
             { state with
                   Player = { state.Player with Position = pos }

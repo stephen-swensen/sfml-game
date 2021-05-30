@@ -4,18 +4,27 @@ namespace Swensen.SFML.Game
 
 open SFML.System
 open SFML.Window
+open SFML.Graphics
 
 type World = PollableWindow * GameState * InputCommands
 
 module Game =
+    let genEnemies count (x,y) = [
+        do ()
+    ]
+
 
     ///Create the World with a BIG BANG
     let bang () =
+        let enemies = genEnemies ()
         let state =
-            { Player = { Position = Vector2f(0f, 0f) }
+            { Player = { Position = Vector2f(0f, 0f); Color = Color.Green; Radius = 10f }
               WindowDimensions = (800u, 600u)
               HudHeight = 60u
-              WallCrossings = 0u }
+              WallCrossings = 0u
+              Enemies = []
+              EnemyCount = 8 }
+        let state = { state with Enemies = genEnemies state.EnemyCount state.BoardDimensions}
 
         let windowWidth, windowHeight = state.WindowDimensions
 
