@@ -5,6 +5,7 @@
     <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Prelude.fs" />
     <Compile Include="PollableWindow.fs" />
     <Compile Include="Assets.fs" />
     <Compile Include="Input.fs" />

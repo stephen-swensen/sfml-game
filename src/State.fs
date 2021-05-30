@@ -12,8 +12,6 @@ type GameState =
 
 module State =
 
-    let inline (%%) n m = ((n % m) + m) % m
-
     ///Calc new position from old position and directional movement
     ///(new pos, true|false wrapped around window)
     let calcNewPosition (pos: Vector2f) direction (window_w, window_h) hudHeight =
