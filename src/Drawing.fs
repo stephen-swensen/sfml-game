@@ -10,7 +10,7 @@ module Drawing =
 
         for enemy in state.Enemies do
             use e =
-                new CircleShape(enemy.Radius, FillColor = enemy.Color, Position = enemy.Position)
+                new CircleShape(enemy.Radius, FillColor = enemy.AliveColor, Position = enemy.Position)
 
             window.Draw(e)
 

@@ -3,14 +3,21 @@ namespace Swensen.SFML.Game
 open SFML.System
 open SFML.Graphics
 
-type Character =
+type Player =
     { Position: Vector2f
       Radius: float32
       Color: Color }
 
+type Enemy =
+    { Position: Vector2f
+      Radius: float32
+      AliveColor: Color
+      EatenColor: Color
+      Eaten: bool }
+
 type GameState =
-    { Player: Character
-      Enemies: Character list
+    { Player: Player
+      Enemies: Enemy list
       WindowDimensions: uint * uint
       HudHeight: uint
       WallCrossings: uint

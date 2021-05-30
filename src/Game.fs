@@ -16,7 +16,9 @@ module Game =
           for i in 1 .. count do
               { Position =
                     Vector2f(((rnd.Next() |> uint) %% x) |> float32, ((rnd.Next() |> uint) %% y) |> float32)
-                Color = Color.Red
+                AliveColor = Color.Red
+                EatenColor = Color.Blue
+                Eaten = false
                 Radius = 20f } ]
 
 
