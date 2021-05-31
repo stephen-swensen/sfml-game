@@ -65,13 +65,19 @@ module Game =
             if not window.IsOpen then
                 ()
             else
+                let sw = Diagnostics.Stopwatch()
+                sw.Start()
                 let commands = Input.pollEvents window commands
                 let state = State.update commands state
 
                 if commands.CloseWindow then
                     window.Dispose()
                 else
+                    window.Clear()
                     Drawing.drawState assets window state
+                    sw.Stop()
+                    Console.Write($"World Refresh: %i{sw.ElapsedMilliseconds}ms     \r")
+                    window.Display()
                     loop (window, state, commands)
 
         loop (bang ())

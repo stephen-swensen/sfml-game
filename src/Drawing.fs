@@ -5,15 +5,19 @@ open SFML.Graphics
 
 module Drawing =
 
+    /// Draw state to the Window (but don't clear or draw the window itself)
     let drawState assets (window: PollableWindow) state =
-        window.Clear()
-
         for enemy in state.Enemies do
             use e =
                 new CircleShape(
                     enemy.Radius,
-                    FillColor = (if enemy.Eaten then enemy.EatenColor else enemy.AliveColor),
-                    Position = enemy.Position)
+                    FillColor =
+                        (if enemy.Eaten then
+                             enemy.EatenColor
+                         else
+                             enemy.AliveColor),
+                    Position = enemy.Position
+                )
 
             window.Draw(e)
 
@@ -45,13 +49,18 @@ module Drawing =
         use hudText = new SFML.Graphics.Text()
 
         do
-            let eatenEnemies = state.Enemies |> Seq.filter (fun e -> e.Eaten) |> Seq.length
+            let eatenEnemies =
+                state.Enemies
+                |> Seq.filter (fun e -> e.Eaten)
+                |> Seq.length
+
             hudText.Font <- assets.Fonts.DejaVuSansMono
+
             hudText.DisplayedString <-
                 sprintf $"Wall Crossings: %u{state.WallCrossings} Eaten: %i{eatenEnemies}"
+
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
             hudText.FillColor <- Color.Black
 
         window.Draw(hudText)
-        window.Display()

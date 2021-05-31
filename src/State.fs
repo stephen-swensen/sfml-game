@@ -46,18 +46,20 @@ module State =
         pos'', pos' <> pos''
 
     //check if the two (circles) intersect https://stackoverflow.com/a/8367547/236255
-    let checkCollision (player:Player) (enemy:Enemy) =
+    let checkCollision (player: Player) (enemy: Enemy) =
         let r' = pown (player.Radius - enemy.Radius) 2
         let r'' = pown (player.Radius + enemy.Radius) 2
+
         let d' =
-            (pown (player.Position.X - enemy.Position.X) 2) +
-            (pown (player.Position.Y - enemy.Position.Y) 2)
+            (pown (player.Position.X - enemy.Position.X) 2)
+            + (pown (player.Position.Y - enemy.Position.Y) 2)
+
         r' <= d' && d' <= r''
 
     let update commands state =
         let pos = state.Player.Position
 
-        let state=
+        let state =
             match commands.ChangeDirection with
             | Some direction ->
                 let pos, wrapped =
@@ -74,11 +76,12 @@ module State =
 
         let enemies =
             state.Enemies
-            |> List.map (fun e ->
-                if e.Eaten then e
-                else
-                    let collision = checkCollision state.Player e
-                    { e with Eaten = collision }
-            )
+            |> List.map
+                (fun e ->
+                    if e.Eaten then
+                        e
+                    else
+                        let collision = checkCollision state.Player e
+                        { e with Eaten = collision })
 
         { state with Enemies = enemies }
