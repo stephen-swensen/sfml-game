@@ -45,19 +45,32 @@ module State =
 
         pos'', pos' <> pos''
 
+    let checkCollision (player:Player) (enemy:Enemy) =
+        player.Position = enemy.Position
+
     let update commands state =
         let pos = state.Player.Position
 
-        match commands.ChangeDirection with
-        | Some direction ->
-            let pos, wrapped =
-                calcNewPosition pos direction state.BoardDimensions
+        let state=
+            match commands.ChangeDirection with
+            | Some direction ->
+                let pos, wrapped =
+                    calcNewPosition pos direction state.BoardDimensions
 
-            { state with
-                  Player = { state.Player with Position = pos }
-                  WallCrossings =
-                      if wrapped then
-                          state.WallCrossings + 1u
-                      else
-                          state.WallCrossings }
-        | None -> state
+                { state with
+                      Player = { state.Player with Position = pos }
+                      WallCrossings =
+                          if wrapped then
+                              state.WallCrossings + 1u
+                          else
+                              state.WallCrossings }
+            | None -> state
+
+        let enemies =
+            state.Enemies
+            |> List.map (fun e ->
+                let collision = checkCollision state.Player e
+                { e with Eaten = collision }
+            )
+
+        { state with Enemies = enemies }

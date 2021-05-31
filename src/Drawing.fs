@@ -10,7 +10,10 @@ module Drawing =
 
         for enemy in state.Enemies do
             use e =
-                new CircleShape(enemy.Radius, FillColor = enemy.AliveColor, Position = enemy.Position)
+                new CircleShape(
+                    enemy.Radius,
+                    FillColor = (if enemy.Eaten then enemy.EatenColor else enemy.AliveColor),
+                    Position = enemy.Position)
 
             window.Draw(e)
 
@@ -42,8 +45,10 @@ module Drawing =
         use hudText = new SFML.Graphics.Text()
 
         do
+            let eatenEnemies = state.Enemies |> Seq.filter (fun e -> e.Eaten) |> Seq.length
             hudText.Font <- assets.Fonts.DejaVuSansMono
-            hudText.DisplayedString <- sprintf $"Wall Crossings: %u{state.WallCrossings}"
+            hudText.DisplayedString <-
+                sprintf $"Wall Crossings: %u{state.WallCrossings} Eaten: %i{eatenEnemies}"
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
             hudText.FillColor <- Color.Black
