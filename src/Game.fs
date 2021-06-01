@@ -11,15 +11,25 @@ type World = PollableWindow * GameState * InputCommands
 
 module Game =
     let genEnemies count (x, y) =
-        [ let rnd = new Random()
+        printfn "(x,y)=%A" (x, y)
+        let radius = 20f
+        let x = x - ((uint radius) * 2u)
+        let y = y - ((uint radius) * 2u)
+        printfn "(x,y)'=%A" (x, y)
+        let rnd = new Random()
 
-          for i in 1 .. count do
-              { Position =
-                    Vector2f(((rnd.Next() |> uint) %% x) |> float32, ((rnd.Next() |> uint) %% y) |> float32)
+        [ for i in 1 .. count do
+              //n.b. circles are drawn from top left corner of bounding box
+              let pos =
+                  Vector2f((((rnd.Next() |> uint) %% x) |> float32), (((rnd.Next() |> uint) %% y) |> float32))
+
+              printfn "pos=%A" pos
+
+              { Position = pos
                 AliveColor = Color.Red
                 EatenColor = Color.Blue
                 Eaten = false
-                Radius = 20f } ]
+                Radius = radius } ]
 
 
     ///Create the World with a BIG BANG
