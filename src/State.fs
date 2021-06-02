@@ -97,12 +97,25 @@ module State =
 
         let enemies =
             state.Enemies
-            |> List.map
+            //move enemies
+            |> Seq.map (fun e ->
+                match e.Eaten, e.Direction with
+                | true, _ | _, None ->
+                    e
+                | _, Some(direction) ->
+                    let pos, _ =
+                        calcNewPosition e.Position direction state.BoardDimensions
+                    { e with Position = pos }
+
+            )
+            //check collisions with player
+            |> Seq.map
                 (fun e ->
                     if e.Eaten then
                         e
                     else
                         let collision = checkCollision state.Player e
                         { e with Eaten = collision })
+            |> Seq.toList
 
         { state with Enemies = enemies }
