@@ -11,19 +11,18 @@ type World = PollableWindow * GameState * InputCommands
 
 module Game =
     let genEnemies count (x, y) =
-        printfn "(x,y)=%A" (x, y)
         let radius = 20f
         let x = x - ((uint radius) * 2u)
         let y = y - ((uint radius) * 2u)
-        printfn "(x,y)'=%A" (x, y)
-        let rnd = new Random()
+
+        let genRandomCoord =
+            let rnd = new Random()
+            fun c -> ((rnd.Next() |> uint) %% c) |> float32
 
         [ for i in 1 .. count do
               //n.b. circles are drawn from top left corner of bounding box
               let pos =
-                  Vector2f((((rnd.Next() |> uint) %% x) |> float32), (((rnd.Next() |> uint) %% y) |> float32))
-
-              printfn "pos=%A" pos
+                  Vector2f(genRandomCoord x, genRandomCoord y)
 
               { Position = pos
                 AliveColor = Color.Red
