@@ -10,14 +10,19 @@ open System
 type World = PollableWindow * GameState * InputCommands
 
 module Game =
-    let genEnemies count (x, y) =
+    let genEnemies (rnd:unit->int) count (x, y) =
         let radius = 20f
         let x = x - ((uint radius) * 2u)
         let y = y - ((uint radius) * 2u)
 
-        let genRandomCoord =
-            let rnd = new Random()
-            fun c -> ((rnd.Next() |> uint) %% c) |> float32
+        let direction =
+            None
+
+        let bouncy =
+            false
+
+        let genRandomCoord c =
+            ((rnd() |> uint) %% c) |> float32
 
         [ for i in 1 .. count do
               //n.b. circles are drawn from top left corner of bounding box
@@ -28,8 +33,9 @@ module Game =
                 AliveColor = Color.Red
                 EatenColor = Color.Blue
                 Eaten = false
-                Radius = radius } ]
-
+                Radius = radius
+                Direction = direction
+                Bouncy = bouncy } ]
 
     ///Create the World with a BIG BANG
     let bang () =
@@ -46,8 +52,11 @@ module Game =
               EnemyCount = 8 }
 
         let state =
+            let rnd =
+                let rnd = new Random()
+                fun () -> rnd.Next()
             { state with
-                  Enemies = genEnemies state.EnemyCount state.BoardDimensions }
+                  Enemies = genEnemies rnd state.EnemyCount state.BoardDimensions }
 
         let windowWidth, windowHeight = state.WindowDimensions
 

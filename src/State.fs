@@ -27,7 +27,10 @@ type Enemy =
       Radius: float32
       AliveColor: Color
       EatenColor: Color
-      Eaten: bool }
+      Eaten: bool
+      Direction: Direction option
+      ///Whether or not should bounce off of walls
+      Bouncy: bool }
 with
     ///The position of the center of the circle
     member this.CenterPosition =
