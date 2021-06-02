@@ -3,27 +3,35 @@ namespace Swensen.SFML.Game
 open SFML.System
 open SFML.Graphics
 
+module private StateHelpers =
+    let boxPosToCenterPos (v:Vector2f) r =
+        let x = v.X + r
+        let y = v.Y + r
+        Vector2f(x,y)
+
+open StateHelpers
+
 type Player =
-    { Position: Vector2f
+    { ///The position of the top left corner of the bounding box
+      Position: Vector2f
       Radius: float32
       Color: Color }
 with
+    ///The position of the center of the circle
     member this.CenterPosition =
-        let x = this.Position.X + this.Radius
-        let y = this.Position.Y + this.Radius
-        Vector2f(x,y)
+        boxPosToCenterPos this.Position this.Radius
 
 type Enemy =
-    { Position: Vector2f
+    { ///The position of the top left corner of the bounding box
+      Position: Vector2f
       Radius: float32
       AliveColor: Color
       EatenColor: Color
       Eaten: bool }
 with
+    ///The position of the center of the circle
     member this.CenterPosition =
-        let x = this.Position.X + this.Radius
-        let y = this.Position.Y + this.Radius
-        Vector2f(x,y)
+        boxPosToCenterPos this.Position this.Radius
 
 type GameState =
     { Player: Player
