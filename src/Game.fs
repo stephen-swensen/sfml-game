@@ -10,18 +10,22 @@ open System
 type World = PollableWindow * GameState * InputCommands
 
 module Game =
-    let genEnemies (rnd:unit->int) count (x, y) =
+    let genEnemies (rnd: unit -> int) count (x, y) =
         let radius = 20f
         let x = x - ((uint radius) * 2u)
         let y = y - ((uint radius) * 2u)
 
         let genDirection () =
-            let directions = [Some Up; Some Down; Some Left; Some Right]
-            let i = rnd() %% directions.Length
+            let directions =
+                [ Some Up
+                  Some Down
+                  Some Left
+                  Some Right ]
+
+            let i = rnd () %% directions.Length
             directions.[i]
 
-        let genRandomCoord c =
-            ((rnd() |> uint) %% c) |> float32
+        let genRandomCoord c = ((rnd () |> uint) %% c) |> float32
 
         [ for i in 1 .. count do
               //n.b. circles are drawn from top left corner of bounding box
@@ -53,6 +57,7 @@ module Game =
             let rnd =
                 let rnd = new Random()
                 fun () -> rnd.Next()
+
             { state with
                   Enemies = genEnemies rnd state.EnemyCount state.BoardDimensions }
 

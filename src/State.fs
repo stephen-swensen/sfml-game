@@ -4,10 +4,10 @@ open SFML.System
 open SFML.Graphics
 
 module private StateHelpers =
-    let boxPosToCenterPos (v:Vector2f) r =
+    let boxPosToCenterPos (v: Vector2f) r =
         let x = v.X + r
         let y = v.Y + r
-        Vector2f(x,y)
+        Vector2f(x, y)
 
 open StateHelpers
 
@@ -16,7 +16,6 @@ type Player =
       Position: Vector2f
       Radius: float32
       Color: Color }
-with
     ///The position of the center of the circle
     member this.CenterPosition =
         boxPosToCenterPos this.Position this.Radius
@@ -29,7 +28,6 @@ type Enemy =
       EatenColor: Color
       Eaten: bool
       Direction: Direction option }
-with
     ///The position of the center of the circle
     member this.CenterPosition =
         boxPosToCenterPos this.Position this.Radius
@@ -96,16 +94,18 @@ module State =
         let enemies =
             state.Enemies
             //move enemies
-            |> Seq.map (fun e ->
-                match e.Eaten, e.Direction with
-                | true, _ | _, None ->
-                    e
-                | _, Some(direction) ->
-                    let pos, _ =
-                        calcNewPosition e.Position direction state.BoardDimensions
-                    { e with Position = pos }
+            |> Seq.map
+                (fun e ->
+                    match e.Eaten, e.Direction with
+                    | true, _
+                    | _, None -> e
+                    | _, Some (direction) ->
+                        let pos, _ =
+                            calcNewPosition e.Position direction state.BoardDimensions
 
-            )
+                        { e with Position = pos }
+
+                    )
             //check collisions with player
             |> Seq.map
                 (fun e ->
