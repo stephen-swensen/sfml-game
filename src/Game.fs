@@ -20,9 +20,6 @@ module Game =
             let i = rnd() %% directions.Length
             directions.[i]
 
-        let genBouncy () =
-            rnd() < Int32.MaxValue / 2
-
         let genRandomCoord c =
             ((rnd() |> uint) %% c) |> float32
 
@@ -36,8 +33,7 @@ module Game =
                 EatenColor = Color.Blue
                 Eaten = false
                 Radius = radius
-                Direction = genDirection ()
-                Bouncy = genBouncy () } ]
+                Direction = genDirection () } ]
 
     ///Create the World with a BIG BANG
     let bang () =
