@@ -7,6 +7,11 @@ type Player =
     { Position: Vector2f
       Radius: float32
       Color: Color }
+with
+    member this.CenterPosition =
+        let x = this.Position.X + this.Radius
+        let y = this.Position.Y + this.Radius
+        Vector2f(x,y)
 
 type Enemy =
     { Position: Vector2f
@@ -14,6 +19,11 @@ type Enemy =
       AliveColor: Color
       EatenColor: Color
       Eaten: bool }
+with
+    member this.CenterPosition =
+        let x = this.Position.X + this.Radius
+        let y = this.Position.Y + this.Radius
+        Vector2f(x,y)
 
 type GameState =
     { Player: Player
@@ -51,8 +61,8 @@ module State =
         let r'' = pown (player.Radius + enemy.Radius) 2
 
         let d' =
-            (pown (player.Position.X - enemy.Position.X) 2)
-            + (pown (player.Position.Y - enemy.Position.Y) 2)
+            (pown (player.CenterPosition.X - enemy.CenterPosition.X) 2)
+            + (pown (player.CenterPosition.Y - enemy.CenterPosition.Y) 2)
 
         r' <= d' && d' <= r''
 
