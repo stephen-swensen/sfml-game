@@ -65,7 +65,7 @@ module Game =
 
         let window =
             let window =
-                new PollableWindow(new VideoMode(windowWidth, windowHeight), "Stephen's first game!")
+                new PollableWindow(new VideoMode(windowWidth, windowHeight), "Unidentified Flying Circles (UFCs)!")
             //https://www.sfml-dev.org/tutorials/2.5/window-window.php#controlling-the-framerate
             //per docs "Never use both setVerticalSyncEnabled and setFramerateLimit at the same time! They would badly mix and make things worse."
             //window.SetVerticalSyncEnabled(true)
