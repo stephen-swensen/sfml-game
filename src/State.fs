@@ -38,7 +38,8 @@ type GameState =
       WindowDimensions: uint * uint
       HudHeight: uint
       WallCrossings: uint
-      EnemyCount: int }
+      EnemyCount: int
+      ElapsedMs: int64 }
     member this.BoardDimensions =
         let wx, wy = this.WindowDimensions
         wx, wy - this.HudHeight
@@ -93,7 +94,7 @@ module State =
 
         let enemies =
             state.Enemies
-            //move enemies
+            //move enemies and reduce radius if needed
             |> Seq.map
                 (fun e ->
                     match e.Eaten, e.Direction with
@@ -103,7 +104,10 @@ module State =
                         let pos, _ =
                             calcNewPosition e.Position direction state.BoardDimensions
 
-                        { e with Position = pos }
+                        let radius =
+                            e.Radius - ((float32 state.ElapsedMs) / 1_000_000f)
+
+                        { e with Position = pos; Radius = radius }
 
                     )
             //check collisions with player
@@ -114,6 +118,7 @@ module State =
                     else
                         let collision = checkCollision state.Player e
                         { e with Eaten = collision })
+            |> Seq.filter (fun e -> e.Radius > 0f)
             |> Seq.toList
 
         { state with Enemies = enemies }

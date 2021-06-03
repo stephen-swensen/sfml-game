@@ -57,7 +57,7 @@ module Drawing =
             hudText.Font <- assets.Fonts.DejaVuSansMono
 
             hudText.DisplayedString <-
-                sprintf $"Wall Crossings: %u{state.WallCrossings} Eaten: %i{eatenEnemies}"
+                sprintf $"Wall Crossings: %u{state.WallCrossings}, Eaten: %i{eatenEnemies}, Time: %i{state.ElapsedMs/1000L}s"
 
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos

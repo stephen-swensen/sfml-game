@@ -51,7 +51,8 @@ module Game =
               HudHeight = 60u
               WallCrossings = 0u
               Enemies = []
-              EnemyCount = 8 }
+              EnemyCount = 8
+              ElapsedMs = 0L }
 
         let state =
             let rnd =
@@ -81,6 +82,8 @@ module Game =
     [<EntryPoint>]
     let main args =
         let assets = Assets.load ()
+        let levelSw = Diagnostics.Stopwatch()
+        levelSw.Start()
 
         let rec loop ((window, state, commands): World) =
             if not window.IsOpen then
@@ -90,6 +93,7 @@ module Game =
                 sw.Start()
                 let commands = Input.pollEvents window commands
                 let state = State.update commands state
+                let state = { state with ElapsedMs=levelSw.ElapsedMilliseconds }
 
                 if commands.CloseWindow then
                     window.Dispose()
