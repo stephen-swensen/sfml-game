@@ -28,19 +28,19 @@ module GameState =
             { gameState with PlayState = StartLevel(currentLevel.Value.StartText) }
         | StartLevel _ when commands.Continue ->
             let level = currentLevel.Value
-            let activeLevelState = LevelState.init rnd gameState.BoardDimensions level
-            { gameState with PlayState = ActiveLevel activeLevelState }
-        | PausedLevel(_, activeLevelState) when commands.Continue ->
-            { gameState with PlayState = ActiveLevel activeLevelState }
-        | ActiveLevel activeLevelState when commands.Continue ->
-            { gameState with PlayState = PausedLevel("Paused", activeLevelState) }
-        | ActiveLevel activeLevelState when activeLevelState.Enemies = [] ->
+            let levelState = LevelState.init rnd gameState.BoardDimensions level
+            { gameState with PlayState = ActiveLevel levelState }
+        | PausedLevel(_, levelState) when commands.Continue ->
+            { gameState with PlayState = ActiveLevel levelState }
+        | ActiveLevel levelState when commands.Continue ->
+            { gameState with PlayState = PausedLevel("Paused", levelState) }
+        | ActiveLevel levelState when levelState.Enemies = [] ->
             { gameState with PlayState = EndGame("Game over (you lose): they all got away!")}
-        | ActiveLevel activeLevelState when activeLevelState.Enemies |> List.forall (fun e -> e.Eaten) ->
+        | ActiveLevel levelState when levelState.Enemies |> List.forall (fun e -> e.Eaten) ->
             { gameState with PlayState = EndLevel("You beat the level!")}
-        | ActiveLevel activeLevelState ->
-            let activeLevelState' = LevelState.update gameState.BoardDimensions commands activeLevelState
-            { gameState with PlayState = ActiveLevel activeLevelState' }
+        | ActiveLevel levelState ->
+            let levelState' = LevelState.update gameState.BoardDimensions commands levelState
+            { gameState with PlayState = ActiveLevel levelState' }
         | EndLevel _ when commands.Continue && gameState.CurrentLevel = (levels.Length - 1) ->
             { gameState with PlayState = EndGame("Game over, you win!!")}
         | EndLevel _ when commands.Continue ->
