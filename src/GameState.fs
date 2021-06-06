@@ -34,8 +34,8 @@ module GameState =
             { gameState with PlayState = ActiveLevel levelState }
         | ActiveLevel levelState when commands.Continue ->
             { gameState with PlayState = PausedLevel("Paused", levelState) }
-        | ActiveLevel levelState when levelState.Enemies = [] ->
-            { gameState with PlayState = EndGame("Game over (you lose): they all got away!")}
+        | ActiveLevel levelState when levelState.Enemies |> List.forall (fun e -> e.Eaten) && levelState.EnemyCount <> levelState.Enemies.Length ->
+            { gameState with PlayState = EndGame("Game over (you lose): some got away!")}
         | ActiveLevel levelState when levelState.Enemies |> List.forall (fun e -> e.Eaten) ->
             { gameState with PlayState = EndLevel("You beat the level!")}
         | ActiveLevel levelState ->

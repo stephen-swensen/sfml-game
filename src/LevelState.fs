@@ -62,14 +62,17 @@ module LevelState =
 
     //check if the two (circles) intersect https://stackoverflow.com/a/8367547/236255
     let checkCollision (player: Player) (enemy: Enemy) =
-        let r' = pown (player.Radius - enemy.Radius) 2
-        let r'' = pown (player.Radius + enemy.Radius) 2
+        if enemy.Radius <= 0f then
+            false
+        else
+            let r' = pown (player.Radius - enemy.Radius) 2
+            let r'' = pown (player.Radius + enemy.Radius) 2
 
-        let d' =
-            (pown (player.CenterPosition.X - enemy.CenterPosition.X) 2)
-            + (pown (player.CenterPosition.Y - enemy.CenterPosition.Y) 2)
+            let d' =
+                (pown (player.CenterPosition.X - enemy.CenterPosition.X) 2)
+                + (pown (player.CenterPosition.Y - enemy.CenterPosition.Y) 2)
 
-        r' <= d' && d' <= r''
+            r' <= d' && d' <= r''
 
     let update (boardDimensions: uint * uint) commands state =
         let pos = state.Player.Position
