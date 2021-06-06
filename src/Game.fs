@@ -10,57 +10,8 @@ open System
 type World = PollableWindow * GameState * InputCommands
 
 module Game =
-    let genEnemies (rnd: unit -> int) count (x, y) =
-        let radius = 20f
-        let x = x - ((uint radius) * 2u)
-        let y = y - ((uint radius) * 2u)
-
-        let genDirection () =
-            let directions =
-                [ Some Up
-                  Some Down
-                  Some Left
-                  Some Right ]
-
-            let i = rnd () %% directions.Length
-            directions.[i]
-
-        let genRandomCoord c = ((rnd () |> uint) %% c) |> float32
-
-        [ for i in 1 .. count do
-              //n.b. circles are drawn from top left corner of bounding box
-              let pos =
-                  Vector2f(genRandomCoord x, genRandomCoord y)
-
-              { Position = pos
-                AliveColor = Color.Red
-                EatenColor = Color.Blue
-                Eaten = false
-                Radius = radius
-                Direction = genDirection () } ]
-
     ///Create the World with a BIG BANG
     let bang () =
-
-        let state =
-            { Player =
-                  { Position = Vector2f(0f, 0f)
-                    Color = Color.Green
-                    Radius = 10f }
-              WindowDimensions = (800u, 600u)
-              HudHeight = 60u
-              WallCrossings = 0u
-              Enemies = []
-              EnemyCount = 8
-              ElapsedMs = 0L }
-
-        let state =
-            let rnd =
-                let rnd = new Random()
-                fun () -> rnd.Next()
-
-            { state with
-                  Enemies = genEnemies rnd state.EnemyCount state.BoardDimensions }
 
         let windowWidth, windowHeight = state.WindowDimensions
 

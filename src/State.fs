@@ -3,125 +3,47 @@ namespace Swensen.SFML.Game
 open SFML.System
 open SFML.Graphics
 
-module private StateHelpers =
-    let boxPosToCenterPos (v: Vector2f) r =
-        let x = v.X + r
-        let y = v.Y + r
-        Vector2f(x, y)
-
-open StateHelpers
-
-type Player =
-    { ///The position of the top left corner of the bounding box
-      Position: Vector2f
-      Radius: float32
-      Color: Color }
-    ///The position of the center of the circle
-    member this.CenterPosition =
-        boxPosToCenterPos this.Position this.Radius
-
-type Enemy =
-    { ///The position of the top left corner of the bounding box
-      Position: Vector2f
-      Radius: float32
-      AliveColor: Color
-      EatenColor: Color
-      Eaten: bool
-      Direction: Direction option }
-    ///The position of the center of the circle
-    member this.CenterPosition =
-        boxPosToCenterPos this.Position this.Radius
+//todo: need states for losing
+type PlayState =
+    | StartGame of string
+    | StartLevel of string
+    | ActiveLevel of ActiveLevelState
+    | PausedLevel of string * ActiveLevelState
+    | EndLevel of string
+    | EndGame of string
 
 type GameState =
-    { Player: Player
-      Enemies: Enemy list
-      WindowDimensions: uint * uint
-      HudHeight: uint
-      WallCrossings: uint
-      EnemyCount: int
-      ElapsedMs: int64 }
-    member this.BoardDimensions =
-        let wx, wy = this.WindowDimensions
-        wx, wy - this.HudHeight
+    { WindowDimensions: uint * uint
+      PlayState: PlayState
+      CurrentLevel: int }
 
 module State =
 
-    ///Calc new position from old position and directional movement
-    ///(new pos, true|false wrapped around window)
-    let calcNewPosition (pos: Vector2f) direction (x, y) =
-        let moveUnit = 4f
-
-        let pos' =
-            match direction with
-            | Up -> Vector2f(pos.X, pos.Y - moveUnit)
-            | Left -> Vector2f(pos.X - moveUnit, pos.Y)
-            | Down -> Vector2f(pos.X, pos.Y + 4f)
-            | Right -> Vector2f(pos.X + moveUnit, pos.Y)
-
-        let pos'' =
-            Vector2f(pos'.X %% (float32 x), pos'.Y %% (float32 y))
-
-        pos'', pos' <> pos''
-
-    //check if the two (circles) intersect https://stackoverflow.com/a/8367547/236255
-    let checkCollision (player: Player) (enemy: Enemy) =
-        let r' = pown (player.Radius - enemy.Radius) 2
-        let r'' = pown (player.Radius + enemy.Radius) 2
-
-        let d' =
-            (pown (player.CenterPosition.X - enemy.CenterPosition.X) 2)
-            + (pown (player.CenterPosition.Y - enemy.CenterPosition.Y) 2)
-
-        r' <= d' && d' <= r''
-
-    let update commands state =
-        let pos = state.Player.Position
-
-        let state =
-            match commands.ChangeDirection with
-            | Some direction ->
-                let pos, wrapped =
-                    calcNewPosition pos direction state.BoardDimensions
-
-                { state with
-                      Player = { state.Player with Position = pos }
-                      WallCrossings =
-                          if wrapped then
-                              state.WallCrossings + 1u
-                          else
-                              state.WallCrossings }
-            | None -> state
-
-        let enemies =
-            state.Enemies
-            //move enemies and reduce radius if needed
-            |> Seq.map
-                (fun e ->
-                    match e.Eaten, e.Direction with
-                    | true, _
-                    | _, None -> e
-                    | _, Some (direction) ->
-                        let pos, _ =
-                            calcNewPosition e.Position direction state.BoardDimensions
-
-                        let radius =
-                            e.Radius
-                            - ((float32 state.ElapsedMs) / 1_000_000f)
-
-                        { e with
-                              Position = pos
-                              Radius = radius }
-
-                    )
-            //check collisions with player
-            |> Seq.map
-                (fun e ->
-                    if e.Eaten then
-                        e
-                    else
-                        let collision = checkCollision state.Player e
-                        { e with Eaten = collision })
-            |> Seq.filter (fun e -> e.Radius > 0f)
-            |> Seq.toList
-
-        { state with Enemies = enemies }
+    let update rnd levels elapsedMs commands gameState =
+        let currentLevel = lazy(levels |> List.item gameState.CurrentLevel)
+        match gameState.PlayState with
+        | StartGame _ when commands.Continue ->
+            { gameState with PlayState = StartLevel(currentLevel.Value.StartText) }
+        | StartLevel _ when commands.Continue ->
+            let level = currentLevel.Value
+            let activeLevelState = ActiveLevelState.init rnd gameState.WindowDimensions level
+            { gameState with PlayState = ActiveLevel activeLevelState }
+        | PausedLevel(_, activeLevelState) when commands.Continue ->
+            { gameState with PlayState = ActiveLevel activeLevelState }
+        | ActiveLevel activeLevelState when commands.Continue ->
+            { gameState with PlayState = PausedLevel("Paused", activeLevelState) }
+        | ActiveLevel activeLevelState when activeLevelState.Enemies = [] ->
+            { gameState with PlayState = EndGame("Game over (you lose): they all got away!")}
+        | ActiveLevel activeLevelState when activeLevelState.Enemies |> List.forall (fun e -> e.Eaten) ->
+            { gameState with PlayState = EndLevel("You beat the level!")}
+        | ActiveLevel activeLevelState ->
+            let activeLevelState' = ActiveLevelState.update gameState.WindowDimensions commands activeLevelState
+            { gameState with PlayState = ActiveLevel activeLevelState' }
+        | EndLevel _ when commands.Continue && gameState.CurrentLevel = (levels.Length - 1) ->
+            { gameState with PlayState = EndGame("Game over, you win!!")}
+        | EndLevel _ when commands.Continue ->
+            let nextLevel = gameState.CurrentLevel + 1
+            let level = levels |> List.item nextLevel
+            { gameState with CurrentLevel = nextLevel; PlayState = StartLevel level.StartText }
+        | _ ->
+            gameState

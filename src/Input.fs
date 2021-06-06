@@ -10,12 +10,16 @@ type Direction =
 
 type InputCommands =
     { ChangeDirection: Direction option
-      CloseWindow: bool }
+      CloseWindow: bool
+      Continue: bool }
 
 module Input =
 
     ///Apply a single event to some existing command state, producing a new command state
     let private applyEvent commands (event: Event) =
+        //clear out previous commands that shouldn't persist
+        let commands = { commands with Continue = false }
+
         let keyMapping =
             [ Keyboard.Key.Up, Up
               Keyboard.Key.Left, Left
@@ -37,6 +41,7 @@ module Input =
             match direction with
             | Some _ as mp -> { commands with ChangeDirection = mp }
             | None when event.Key.Code = Keyboard.Key.Escape -> { commands with CloseWindow = true }
+            | None when event.Key.Code = Keyboard.Key.Enter -> { commands with Continue = true }
             | None -> commands
 
         | EventType.KeyReleased ->
