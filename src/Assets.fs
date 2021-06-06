@@ -11,23 +11,29 @@ type Level = {
 type Fonts = { DejaVuSansMono: Font }
 
 //todo: make this IDisposable?
-type Assets = { Fonts: Fonts; Levels: Level list }
+type Assets = {
+    Fonts: Fonts; Levels: Level list
+}
 
 module Assets =
+    let loadLevels () = [
+        { EnemyCount = 4
+          EnemyDirections = [None]
+          StartText = "Unidentified Flying Circles abound...\nYou.\nMust.\nEat them all!!" }
+        { EnemyCount = 8
+          EnemyDirections = [Some Up; Some Down; Some Left; Some Right; None]
+          StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
+        { EnemyCount = 10
+          EnemyDirections = [Some Up; Some Down; Some Left; Some Right]
+          StartText = "Things are getting a little hectic around here!" }
+    ]
+
+    let loadFonts () =
+        let sansMono =
+            new Font("assets/fonts/truetype/dejavu/DejaVuSansMono.ttf")
+        { DejaVuSansMono = sansMono }
 
     let load () =
-        let fonts =
-            let sansMono =
-                new Font("assets/fonts/truetype/dejavu/DejaVuSansMono.ttf")
-            { DejaVuSansMono = sansMono }
-
-        let levels = [
-            { EnemyCount = 8
-              EnemyDirections = [None]
-              StartText = "Unidentified Flying Circles abound...\nYou.\nMust.\nEat them all!!" }
-            { EnemyCount = 8
-              EnemyDirections = [Some Up; Some Down; Some Left; Some Right]
-              StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
-        ]
-
+        let fonts = loadFonts ()
+        let levels = loadLevels ()
         { Fonts = fonts; Levels = levels }

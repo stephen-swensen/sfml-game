@@ -12,7 +12,7 @@ type GameState =
     { WindowDimensions: uint * uint
       HudHeight: uint
       PlayState: PlayState
-      CurrentLevel: int
+      CurrentLevelIndex: int
       Title: string }
 with
     member this.BoardDimensions =
@@ -22,7 +22,7 @@ with
 module GameState =
 
     let update rnd levels commands gameState =
-        let currentLevel = lazy(levels |> List.item gameState.CurrentLevel)
+        let currentLevel = lazy(levels |> List.item gameState.CurrentLevelIndex)
         match gameState.PlayState with
         | StartGame _ when commands.Continue ->
             { gameState with PlayState = StartLevel(currentLevel.Value.StartText) }
@@ -41,21 +41,21 @@ module GameState =
         | ActiveLevel levelState ->
             let levelState' = LevelState.update gameState.BoardDimensions commands levelState
             { gameState with PlayState = ActiveLevel levelState' }
-        | EndLevel _ when commands.Continue && gameState.CurrentLevel = (levels.Length - 1) ->
+        | EndLevel _ when commands.Continue && gameState.CurrentLevelIndex = (levels.Length - 1) ->
             { gameState with PlayState = EndGame("Game over, you win!!")}
         | EndLevel _ when commands.Continue ->
-            let nextLevel = gameState.CurrentLevel + 1
+            let nextLevel = gameState.CurrentLevelIndex + 1
             let level = levels |> List.item nextLevel
-            { gameState with CurrentLevel = nextLevel; PlayState = StartLevel level.StartText }
+            { gameState with CurrentLevelIndex = nextLevel; PlayState = StartLevel level.StartText }
         | _ ->
             gameState
 
-    let init () =
+    let init levelIndex =
         let state = {
             WindowDimensions = 800u, 600u
             HudHeight = 60u
             PlayState = StartGame ("Welcome to UFC\n\nSomething strange is going on...\nUnidentified Fly Circles have...\nbeen identified!")
-            CurrentLevel = 0
+            CurrentLevelIndex = levelIndex
             Title = "Unidentified Flying Circles (UFCs)!"
         }
         state

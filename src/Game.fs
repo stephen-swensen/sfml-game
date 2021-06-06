@@ -16,8 +16,8 @@ module Game =
             r.Next()
 
     ///Create the World with a BIG BANG
-    let bang () =
-        let state = GameState.init ()
+    let bang levelIndex =
+        let state = GameState.init levelIndex
 
         let window =
             let window =
@@ -40,7 +40,15 @@ module Game =
 
     [<EntryPoint>]
     let main args =
+        printfn "%A" args
+        let levelIndex =
+            match args with
+            | [|_;level|] -> Int32.Parse(level) - 1
+            | _ -> 0
+
         let assets = Assets.load ()
+        let world = bang levelIndex
+
         let lsw = Diagnostics.Stopwatch()
 
         let rec loop ((window, state, commands): World) =
@@ -78,5 +86,5 @@ module Game =
                     window.Display()
                     loop (window, gameState, commands)
 
-        loop (bang ())
+        loop world
         0
