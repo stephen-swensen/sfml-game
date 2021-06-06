@@ -105,9 +105,12 @@ module State =
                             calcNewPosition e.Position direction state.BoardDimensions
 
                         let radius =
-                            e.Radius - ((float32 state.ElapsedMs) / 1_000_000f)
+                            e.Radius
+                            - ((float32 state.ElapsedMs) / 1_000_000f)
 
-                        { e with Position = pos; Radius = radius }
+                        { e with
+                              Position = pos
+                              Radius = radius }
 
                     )
             //check collisions with player
