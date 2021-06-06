@@ -20,7 +20,7 @@ module Game =
         let state = {
             WindowDimensions = 800u, 600u
             PlayState = StartGame ("Welcome to UFC's - something strange")
-            CurrentLevel = 1
+            CurrentLevel = 0
         }
 
         let windowWidth, windowHeight = state.WindowDimensions
