@@ -17,8 +17,6 @@ module Input =
 
     ///Apply a single event to some existing command state, producing a new command state
     let private applyEvent commands (event: Event) =
-        //clear out previous commands that shouldn't persist
-        let commands = { commands with Continue = false }
 
         let keyMapping =
             [ Keyboard.Key.Up, Up

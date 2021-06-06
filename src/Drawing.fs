@@ -5,8 +5,9 @@ open SFML.Graphics
 
 module Drawing =
 
-    /// Draw state to the Window (but don't clear or draw the window itself)
-    let drawState assets (window: PollableWindow) state =
+    /// Draw active level state to the Window (but don't clear or draw the window itself)
+    let drawActiveLevelState assets (window: PollableWindow) winDimensions state =
+        let winDimensions = ActiveLevelState.caclBoardDimensions winDimensions state.HudHeight
         for enemy in state.Enemies do
             use e =
                 new CircleShape(
@@ -33,13 +34,13 @@ module Drawing =
         let hudPos =
             Vector2f(
                 0f,
-                ((snd >> float32) state.WindowDimensions)
+                ((snd >> float32) winDimensions)
                 - (float32 state.HudHeight)
             )
 
         use hud =
             new RectangleShape(
-                Vector2f((fst >> float32) state.WindowDimensions, float32 state.HudHeight),
+                Vector2f((fst >> float32) winDimensions, float32 state.HudHeight),
                 FillColor = Color.Cyan,
                 Position = hudPos
             )
@@ -68,3 +69,20 @@ module Drawing =
             hudText.FillColor <- Color.Black
 
         window.Draw(hudText)
+
+    let drawState assets (window: PollableWindow) elapsedMs state =
+        match state.PlayState with
+        | StartGame text
+        | StartLevel text
+        | PausedLevel(text, _)
+        | EndLevel text
+        | EndGame text ->
+            use gtext = new SFML.Graphics.Text()
+            gtext.Font <- assets.Fonts.DejaVuSansMono
+            gtext.DisplayedString <- text
+            gtext.CharacterSize <- 30u
+            gtext.Position <- Vector2f(0f,0f)
+            gtext.FillColor <- Color.Green
+            window.Draw(gtext)
+        | ActiveLevel activeLevelState ->
+            drawActiveLevelState assets window state.WindowDimensions activeLevelState

@@ -43,7 +43,7 @@ type ActiveLevelState = {
 }
 
 module ActiveLevelState =
-    let caclBoardDimensions (winDimensions:unit*uint) hudHeight =
+    let caclBoardDimensions (winDimensions:uint*uint) hudHeight =
         let wx, wy = winDimensions
         wx, wy - hudHeight
 

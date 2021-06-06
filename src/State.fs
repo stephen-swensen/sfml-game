@@ -19,7 +19,7 @@ type GameState =
 
 module State =
 
-    let update rnd levels elapsedMs commands gameState =
+    let update rnd levels commands gameState =
         let currentLevel = lazy(levels |> List.item gameState.CurrentLevel)
         match gameState.PlayState with
         | StartGame _ when commands.Continue ->

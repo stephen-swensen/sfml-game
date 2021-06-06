@@ -10,8 +10,18 @@ open System
 type World = PollableWindow * GameState * InputCommands
 
 module Game =
+    let rnd =
+        fun () ->
+            let r = new Random()
+            r.Next()
+
     ///Create the World with a BIG BANG
     let bang () =
+        let state = {
+            WindowDimensions = 800u, 600u
+            PlayState = StartGame ("Welcome to UFC's - something strange")
+            CurrentLevel = 1
+        }
 
         let windowWidth, windowHeight = state.WindowDimensions
 
@@ -29,15 +39,15 @@ module Game =
 
         let commands =
             { ChangeDirection = None
-              CloseWindow = false }
+              CloseWindow = false
+              Continue = false }
 
         window, state, commands
 
     [<EntryPoint>]
     let main args =
         let assets = Assets.load ()
-        let levelSw = Diagnostics.Stopwatch()
-        levelSw.Start()
+        let lsw = Diagnostics.Stopwatch()
 
         let rec loop ((window, state, commands): World) =
             if not window.IsOpen then
@@ -46,17 +56,21 @@ module Game =
                 let sw = Diagnostics.Stopwatch()
                 sw.Start()
                 let commands = Input.pollEvents window commands
-                let state = State.update commands state
+                let state = State.update rnd assets.Levels commands state
+                //clear out previous commands that shouldn't persist
+                let commands = { commands with Continue = false }
 
-                let state =
-                    { state with
-                          ElapsedMs = levelSw.ElapsedMilliseconds }
+                match state.PlayState with
+                | ActiveLevel _ when lsw.IsRunning |> not -> lsw.Start()
+                | PausedLevel _ when lsw.IsRunning -> lsw.Stop()
+                | EndLevel _ -> lsw.Stop(); lsw.Reset()
+                | _ -> ()
 
                 if commands.CloseWindow then
                     window.Dispose()
                 else
                     window.Clear()
-                    Drawing.drawState assets window state
+                    Drawing.drawState assets window lsw.ElapsedMilliseconds state
                     sw.Stop()
                     Console.Write($"World Refresh: %i{sw.ElapsedMilliseconds}ms     \r")
                     window.Display()
