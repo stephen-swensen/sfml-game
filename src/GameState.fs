@@ -61,10 +61,13 @@ module GameState =
                      Unidentified Fly Circles have...\n\
                      been identified!\n\n\n\
                      Controls:\n\
-                     - Press Up / Down / Left / Right arrows\n  to move\n\
-                     - Press Enter to Continue\n\
-                     - During game play, press Enter\n  to Pause or Resume\n\
-                     - Press ESC to exit")
+                     - Press Enter to Continue between screens\n\
+                     - Press ESC to exit at any time\n\
+                     - During game play,\n\
+                     -- Press Up / Down / Left / Right arrows\n   \
+                     to move around\n\
+                     -- Press Enter to Pause or Resume\n\
+                     ")
             CurrentLevelIndex = levelIndex
             Title = "Unidentified Flying Circles (UFCs)!"
         }
