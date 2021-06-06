@@ -54,7 +54,17 @@ module GameState =
         let state = {
             WindowDimensions = 800u, 600u
             HudHeight = 60u
-            PlayState = StartGame ("Welcome to UFC\n\nSomething strange is going on...\nUnidentified Fly Circles have...\nbeen identified!")
+            PlayState =
+                StartGame (
+                    "Welcome to UFC\n\n\
+                     Something strange is going on...\n\
+                     Unidentified Fly Circles have...\n\
+                     been identified!\n\n\n\
+                     Controls:\n\
+                     - Press Up / Down / Left / Right arrows\n  to move\n\
+                     - Press Enter to Continue\n\
+                     - During game play, press Enter\n  to Pause or Resume\n\
+                     - Press ESC to exit")
             CurrentLevelIndex = levelIndex
             Title = "Unidentified Flying Circles (UFCs)!"
         }
