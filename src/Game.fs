@@ -2,10 +2,9 @@ namespace Swensen.SFML.Game
 
 // originally adapted from xcvd's question at https://stackoverflow.com/questions/22072603/f-game-development-modifying-state-variables/22076855#22076855
 
-open SFML.System
-open SFML.Window
-open SFML.Graphics
 open System
+open SFML.Window
+open FsToolkit
 
 type World = PollableWindow * GameState * InputCommands
 
@@ -40,12 +39,7 @@ module Game =
 
     [<EntryPoint>]
     let main args =
-        printfn "%A" args
-        let levelIndex =
-            match args with
-            | [|_;level|] -> Int32.Parse(level) - 1
-            | _ -> 0
-
+        let levelIndex = Config.tryGetSetting("level") |? "1" |> int32 |> ((+)(-1))
         let assets = Assets.load ()
         let world = bang levelIndex
 

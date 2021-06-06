@@ -21,11 +21,11 @@ module Assets =
           EnemyDirections = [None]
           StartText = "Unidentified Flying Circles abound...\nYou.\nMust.\nEat them all!!" }
         { EnemyCount = 8
-          EnemyDirections = [Some Up; Some Down; Some Left; Some Right; None]
-          StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
-        { EnemyCount = 10
           EnemyDirections = [Some Up; Some Down; Some Left; Some Right]
-          StartText = "Things are getting a little hectic around here!" }
+          StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
+        { EnemyCount = 14
+          EnemyDirections = [Some Up; Some Down; Some Left; Some Right]
+          StartText = "Things are getting a little hectic\naround here!" }
     ]
 
     let loadFonts () =
