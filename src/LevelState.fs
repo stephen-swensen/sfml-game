@@ -39,13 +39,9 @@ type LevelState = {
     WallCrossings: uint
     EnemyCount: int
     ElapsedMs: int64
-    HudHeight: uint
 }
 
 module LevelState =
-    let caclBoardDimensions (winDimensions:uint*uint) hudHeight =
-        let wx, wy = winDimensions
-        wx, wy - hudHeight
 
     ///Calc new position from old position and directional movement
     ///(new pos, true|false wrapped around window)
@@ -75,15 +71,14 @@ module LevelState =
 
         r' <= d' && d' <= r''
 
-    let update winDimensions commands state =
+    let update (boardDimensions: uint * uint) commands state =
         let pos = state.Player.Position
-        let boardDimensions = lazy((caclBoardDimensions winDimensions state.HudHeight))
 
         let state =
             match commands.ChangeDirection with
             | Some direction ->
                 let pos, wrapped =
-                    calcNewPosition pos direction boardDimensions.Value
+                    calcNewPosition pos direction boardDimensions
 
                 { state with
                       Player = { state.Player with Position = pos }
@@ -104,7 +99,7 @@ module LevelState =
                     | _, None -> e
                     | _, Some (direction) ->
                         let pos, _ =
-                            calcNewPosition e.Position direction boardDimensions.Value
+                            calcNewPosition e.Position direction boardDimensions
 
                         let radius =
                             e.Radius
@@ -150,14 +145,13 @@ module LevelState =
                 Radius = radius
                 Direction = genDirection () } ]
 
-    let init rnd winDimensions (level: Level) =
+    let init rnd boardDimensions (level: Level) =
 
         let state =
             { Player =
                   { Position = Vector2f(0f, 0f)
                     Color = Color.Green
                     Radius = 10f }
-              HudHeight = 60u
               WallCrossings = 0u
               Enemies = []
               EnemyCount = level.EnemyCount
@@ -166,6 +160,5 @@ module LevelState =
         let state =
             { state with
                   Enemies =
-                    genEnemies (level.EnemyDirections) rnd state.EnemyCount (caclBoardDimensions winDimensions state.HudHeight) }
-
+                    genEnemies (level.EnemyDirections) rnd state.EnemyCount boardDimensions }
         state

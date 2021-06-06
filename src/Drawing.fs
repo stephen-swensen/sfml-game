@@ -6,8 +6,7 @@ open SFML.Graphics
 module Drawing =
 
     /// Draw active level state to the Window (but don't clear or draw the window itself)
-    let drawActiveLevelState assets (window: PollableWindow) winDimensions state =
-        let winDimensions = LevelState.caclBoardDimensions winDimensions state.HudHeight
+    let drawActiveLevelState assets (window: PollableWindow) winDimensions hudHeight boardDimensions state =
         for enemy in state.Enemies do
             use e =
                 new CircleShape(
@@ -35,12 +34,12 @@ module Drawing =
             Vector2f(
                 0f,
                 ((snd >> float32) winDimensions)
-                - (float32 state.HudHeight)
+                - (float32 hudHeight)
             )
 
         use hud =
             new RectangleShape(
-                Vector2f((fst >> float32) winDimensions, float32 state.HudHeight),
+                Vector2f((fst >> float32) boardDimensions, float32 hudHeight),
                 FillColor = Color.Cyan,
                 Position = hudPos
             )
@@ -85,4 +84,4 @@ module Drawing =
             gtext.FillColor <- Color.Green
             window.Draw(gtext)
         | ActiveLevel activeLevelState ->
-            drawActiveLevelState assets window state.WindowDimensions activeLevelState
+            drawActiveLevelState assets window state.WindowDimensions state.HudHeight state.BoardDimensions activeLevelState

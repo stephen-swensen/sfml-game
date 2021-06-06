@@ -10,9 +10,14 @@ type PlayState =
 
 type GameState =
     { WindowDimensions: uint * uint
+      HudHeight: uint
       PlayState: PlayState
       CurrentLevel: int
       Title: string }
+with
+    member this.BoardDimensions =
+        let wx, wy = this.WindowDimensions
+        wx, wy - this.HudHeight
 
 module GameState =
 
@@ -23,7 +28,7 @@ module GameState =
             { gameState with PlayState = StartLevel(currentLevel.Value.StartText) }
         | StartLevel _ when commands.Continue ->
             let level = currentLevel.Value
-            let activeLevelState = LevelState.init rnd gameState.WindowDimensions level
+            let activeLevelState = LevelState.init rnd gameState.BoardDimensions level
             { gameState with PlayState = ActiveLevel activeLevelState }
         | PausedLevel(_, activeLevelState) when commands.Continue ->
             { gameState with PlayState = ActiveLevel activeLevelState }
@@ -34,7 +39,7 @@ module GameState =
         | ActiveLevel activeLevelState when activeLevelState.Enemies |> List.forall (fun e -> e.Eaten) ->
             { gameState with PlayState = EndLevel("You beat the level!")}
         | ActiveLevel activeLevelState ->
-            let activeLevelState' = LevelState.update gameState.WindowDimensions commands activeLevelState
+            let activeLevelState' = LevelState.update gameState.BoardDimensions commands activeLevelState
             { gameState with PlayState = ActiveLevel activeLevelState' }
         | EndLevel _ when commands.Continue && gameState.CurrentLevel = (levels.Length - 1) ->
             { gameState with PlayState = EndGame("Game over, you win!!")}
@@ -48,6 +53,7 @@ module GameState =
     let init () =
         let state = {
             WindowDimensions = 800u, 600u
+            HudHeight = 60u
             PlayState = StartGame ("Welcome to UFC's - something strange")
             CurrentLevel = 0
             Title = "Unidentified Flying Circles (UFCs)!"
