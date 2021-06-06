@@ -6,8 +6,8 @@ open SFML.Graphics
 module Drawing =
 
     /// Draw active level state to the Window (but don't clear or draw the window itself)
-    let drawActiveLevelState assets (window: PollableWindow) winDimensions hudHeight boardDimensions state =
-        for enemy in state.Enemies do
+    let drawLevelState assets (window: PollableWindow) winDimensions hudHeight boardDimensions levelState =
+        for enemy in levelState.Enemies do
             use e =
                 new CircleShape(
                     enemy.Radius,
@@ -23,9 +23,9 @@ module Drawing =
 
         use player =
             new CircleShape(
-                state.Player.Radius,
-                FillColor = state.Player.Color,
-                Position = state.Player.Position
+                levelState.Player.Radius,
+                FillColor = levelState.Player.Color,
+                Position = levelState.Player.Position
             )
 
         window.Draw(player)
@@ -50,7 +50,7 @@ module Drawing =
 
         do
             let eatenEnemies =
-                state.Enemies
+                levelState.Enemies
                 |> Seq.filter (fun e -> e.Eaten)
                 |> Seq.length
 
@@ -58,10 +58,7 @@ module Drawing =
 
             hudText.DisplayedString <-
                 sprintf
-                    $"Wall Crossings: %u{state.WallCrossings}, Eaten: %i{eatenEnemies}, Time: %i{
-                                                                                                     state.ElapsedMs
-                                                                                                     / 1000L
-                    }s"
+                    $"Wall Crossings: %u{levelState.WallCrossings}, Eaten: %i{eatenEnemies}, Time: %i{levelState.ElapsedMs / 1000L }s"
 
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
@@ -69,8 +66,8 @@ module Drawing =
 
         window.Draw(hudText)
 
-    let drawState assets (window: PollableWindow) elapsedMs state =
-        match state.PlayState with
+    let drawState assets (window: PollableWindow) gameState =
+        match gameState.PlayState with
         | StartGame text
         | StartLevel text
         | PausedLevel(text, _)
@@ -83,5 +80,5 @@ module Drawing =
             gtext.Position <- Vector2f(0f,0f)
             gtext.FillColor <- Color.Green
             window.Draw(gtext)
-        | ActiveLevel activeLevelState ->
-            drawActiveLevelState assets window state.WindowDimensions state.HudHeight state.BoardDimensions activeLevelState
+        | ActiveLevel levelState ->
+            drawLevelState assets window gameState.WindowDimensions gameState.HudHeight gameState.BoardDimensions levelState

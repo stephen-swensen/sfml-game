@@ -50,25 +50,33 @@ module Game =
                 let sw = Diagnostics.Stopwatch()
                 sw.Start()
                 let commands = Input.pollEvents window commands
-                let state = GameState.update rnd assets.Levels commands state
+                let gameState = GameState.update rnd assets.Levels commands state
                 //clear out previous commands that shouldn't persist
                 let commands = { commands with Continue = false }
 
-                match state.PlayState with
+                match gameState.PlayState with
                 | ActiveLevel _ when lsw.IsRunning |> not -> lsw.Start()
                 | PausedLevel _ when lsw.IsRunning -> lsw.Stop()
                 | EndLevel _ -> lsw.Stop(); lsw.Reset()
                 | _ -> ()
 
+                let playState =
+                    match gameState.PlayState with
+                    | ActiveLevel levelState ->
+                        ActiveLevel { levelState with ElapsedMs = lsw.ElapsedMilliseconds }
+                    | ps -> ps
+
+                let gameState = { gameState with PlayState=playState }
+
                 if commands.CloseWindow then
                     window.Dispose()
                 else
                     window.Clear()
-                    Drawing.drawState assets window lsw.ElapsedMilliseconds state
+                    Drawing.drawState assets window gameState
                     sw.Stop()
                     Console.Write($"World Refresh: %i{sw.ElapsedMilliseconds}ms     \r")
                     window.Display()
-                    loop (window, state, commands)
+                    loop (window, gameState, commands)
 
         loop (bang ())
         0
