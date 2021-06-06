@@ -17,19 +17,13 @@ module Game =
 
     ///Create the World with a BIG BANG
     let bang () =
-        let state = {
-            WindowDimensions = 800u, 600u
-            PlayState = StartGame ("Welcome to UFC's - something strange")
-            CurrentLevel = 0
-        }
-
-        let windowWidth, windowHeight = state.WindowDimensions
+        let state = GameState.init ()
 
         let window =
             let window =
                 new PollableWindow(
-                    new VideoMode(windowWidth, windowHeight),
-                    "Unidentified Flying Circles (UFCs)!"
+                    VideoMode(fst state.WindowDimensions, snd state.WindowDimensions),
+                    state.Title
                 )
             //https://www.sfml-dev.org/tutorials/2.5/window-window.php#controlling-the-framerate
             //per docs "Never use both setVerticalSyncEnabled and setFramerateLimit at the same time! They would badly mix and make things worse."
@@ -56,7 +50,7 @@ module Game =
                 let sw = Diagnostics.Stopwatch()
                 sw.Start()
                 let commands = Input.pollEvents window commands
-                let state = State.update rnd assets.Levels commands state
+                let state = GameState.update rnd assets.Levels commands state
                 //clear out previous commands that shouldn't persist
                 let commands = { commands with Continue = false }
 

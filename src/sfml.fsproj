@@ -9,8 +9,8 @@
     <Compile Include="PollableWindow.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="Assets.fs" />
-    <Compile Include="ActiveLevelState.fs" />
-    <Compile Include="State.fs" />
+    <Compile Include="LevelState.fs" />
+    <Compile Include="GameState.fs" />
     <Compile Include="Drawing.fs" />
     <Compile Include="Game.fs" />
   </ItemGroup>

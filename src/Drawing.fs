@@ -7,7 +7,7 @@ module Drawing =
 
     /// Draw active level state to the Window (but don't clear or draw the window itself)
     let drawActiveLevelState assets (window: PollableWindow) winDimensions state =
-        let winDimensions = ActiveLevelState.caclBoardDimensions winDimensions state.HudHeight
+        let winDimensions = LevelState.caclBoardDimensions winDimensions state.HudHeight
         for enemy in state.Enemies do
             use e =
                 new CircleShape(

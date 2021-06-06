@@ -33,7 +33,7 @@ type Enemy =
     member this.CenterPosition =
         boxPosToCenterPos this.Position this.Radius
 
-type ActiveLevelState = {
+type LevelState = {
     Player: Player
     Enemies: Enemy list
     WallCrossings: uint
@@ -42,7 +42,7 @@ type ActiveLevelState = {
     HudHeight: uint
 }
 
-module ActiveLevelState =
+module LevelState =
     let caclBoardDimensions (winDimensions:uint*uint) hudHeight =
         let wx, wy = winDimensions
         wx, wy - hudHeight
@@ -138,7 +138,7 @@ module ActiveLevelState =
 
         let genRandomCoord c = ((rnd () |> uint) %% c) |> float32
 
-        [ for i in 1 .. count do
+        [ for _ in 1 .. count do
               //n.b. circles are drawn from top left corner of bounding box
               let pos =
                   Vector2f(genRandomCoord x, genRandomCoord y)
