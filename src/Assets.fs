@@ -24,10 +24,10 @@ module Assets =
         let levels = [
             { EnemyCount = 8
               EnemyDirections = [None]
-              StartText = "Unidentified Flying Circles abound - you must eat them all!!" }
+              StartText = "Unidentified Flying Circles abound...\nYou.\nMust.\nEat them all!!" }
             { EnemyCount = 8
               EnemyDirections = [Some Up; Some Down; Some Left; Some Right]
-              StartText = "They've learned and they've learned fast - try to keep up!!" }
+              StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
         ]
 
         { Fonts = fonts; Levels = levels }

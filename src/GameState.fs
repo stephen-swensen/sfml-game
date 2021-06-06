@@ -54,7 +54,7 @@ module GameState =
         let state = {
             WindowDimensions = 800u, 600u
             HudHeight = 60u
-            PlayState = StartGame ("Welcome to UFC's - something strange")
+            PlayState = StartGame ("Welcome to UFC\n\nSomething strange is going on...\nUnidentified Fly Circles have...\nbeen identified!")
             CurrentLevel = 0
             Title = "Unidentified Flying Circles (UFCs)!"
         }
