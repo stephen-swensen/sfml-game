@@ -58,7 +58,10 @@ module Drawing =
 
             hudText.DisplayedString <-
                 sprintf
-                    $"Wall Crossings: %u{levelState.WallCrossings}, Eaten: %i{eatenEnemies}, Time: %i{levelState.ElapsedMs / 1000L }s"
+                    $"Wall Crossings: %u{levelState.WallCrossings}, Eaten: %i{eatenEnemies}, Time: %i{
+                                                                                                          levelState.ElapsedMs
+                                                                                                          / 1000L
+                    }s"
 
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
@@ -70,15 +73,21 @@ module Drawing =
         match gameState.PlayState with
         | StartGame text
         | StartLevel text
-        | PausedLevel(text, _)
+        | PausedLevel (text, _)
         | EndLevel text
         | EndGame text ->
             use gtext = new SFML.Graphics.Text()
             gtext.Font <- assets.Fonts.DejaVuSansMono
             gtext.DisplayedString <- text
             gtext.CharacterSize <- 30u
-            gtext.Position <- Vector2f(0f,0f)
+            gtext.Position <- Vector2f(0f, 0f)
             gtext.FillColor <- Color.Green
             window.Draw(gtext)
         | ActiveLevel levelState ->
-            drawLevelState assets window gameState.WindowDimensions gameState.HudHeight gameState.BoardDimensions levelState
+            drawLevelState
+                assets
+                window
+                gameState.WindowDimensions
+                gameState.HudHeight
+                gameState.BoardDimensions
+                levelState

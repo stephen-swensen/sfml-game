@@ -8,6 +8,7 @@
     <Compile Include="Prelude.fs" />
     <Compile Include="PollableWindow.fs" />
     <Compile Include="Input.fs" />
+    <Compile Include="Levels.fs" />
     <Compile Include="Assets.fs" />
     <Compile Include="LevelState.fs" />
     <Compile Include="GameState.fs" />

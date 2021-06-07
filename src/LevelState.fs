@@ -33,13 +33,12 @@ type Enemy =
     member this.CenterPosition =
         boxPosToCenterPos this.Position this.Radius
 
-type LevelState = {
-    Player: Player
-    Enemies: Enemy list
-    WallCrossings: uint
-    EnemyCount: int
-    ElapsedMs: int64
-}
+type LevelState =
+    { Player: Player
+      Enemies: Enemy list
+      WallCrossings: uint
+      EnemyCount: int
+      ElapsedMs: int64 }
 
 module LevelState =
 
@@ -110,8 +109,7 @@ module LevelState =
 
                         { e with
                               Position = pos
-                              Radius = radius }
-                    )
+                              Radius = radius })
             //check collisions with player
             |> Seq.map
                 (fun e ->
@@ -162,6 +160,6 @@ module LevelState =
 
         let state =
             { state with
-                  Enemies =
-                    genEnemies (level.EnemyDirections) rnd state.EnemyCount boardDimensions }
+                  Enemies = genEnemies (level.EnemyDirections) rnd state.EnemyCount boardDimensions }
+
         state

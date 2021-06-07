@@ -39,7 +39,11 @@ module Game =
 
     [<EntryPoint>]
     let main args =
-        let levelIndex = Config.tryGetSetting("level") |? "1" |> int32 |> ((+)(-1))
+        let levelIndex =
+            Config.tryGetSetting ("level") |? "1"
+            |> int32
+            |> ((+) (-1))
+
         let assets = Assets.load ()
         let world = bang levelIndex
 
@@ -52,23 +56,29 @@ module Game =
                 let sw = Diagnostics.Stopwatch()
                 sw.Start()
                 let commands = Input.pollEvents window commands
-                let gameState = GameState.update rnd assets.Levels commands state
+
+                let gameState =
+                    GameState.update rnd assets.Levels commands state
                 //clear out previous commands that shouldn't persist
                 let commands = { commands with Continue = false }
 
                 match gameState.PlayState with
                 | ActiveLevel _ when lsw.IsRunning |> not -> lsw.Start()
                 | PausedLevel _ when lsw.IsRunning -> lsw.Stop()
-                | EndLevel _ -> lsw.Stop(); lsw.Reset()
+                | EndLevel _ ->
+                    lsw.Stop()
+                    lsw.Reset()
                 | _ -> ()
 
                 let playState =
                     match gameState.PlayState with
                     | ActiveLevel levelState ->
-                        ActiveLevel { levelState with ElapsedMs = lsw.ElapsedMilliseconds }
+                        ActiveLevel
+                            { levelState with
+                                  ElapsedMs = lsw.ElapsedMilliseconds }
                     | ps -> ps
 
-                let gameState = { gameState with PlayState=playState }
+                let gameState = { gameState with PlayState = playState }
 
                 if commands.CloseWindow then
                     window.Dispose()
