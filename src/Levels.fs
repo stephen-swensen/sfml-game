@@ -17,7 +17,7 @@ module Levels =
                   Some Right ]
             StartText = "Circles abound...\nYou.\nMust.\nEat them all!!" }
           { EnemySpeed = 4f
-            EnemyCount = 6
+            EnemyCount = 8
             EnemyDirections =
                 [ Some Up
                   Some Down
@@ -25,10 +25,19 @@ module Levels =
                   Some Right ]
             StartText = "They've learned and they've learned fast...\nTry to keep up!!" }
           { EnemySpeed = 6f
-            EnemyCount = 8
+            EnemyCount = 10
             EnemyDirections =
                 [ Some Up
                   Some Down
                   Some Left
                   Some Right ]
-            StartText = "Things are getting a little hectic\naround here!" } ]
+            StartText = "Things are getting a little hectic\naround here!" }
+          { EnemySpeed = 10f
+            EnemyCount = 12
+            EnemyDirections =
+                [ Some Up
+                  Some Down
+                  Some Left
+                  Some Right ]
+            StartText = "Great balls of fire, this it!!!\n(hold on to your saddle)"
+            } ]
