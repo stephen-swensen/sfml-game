@@ -13,7 +13,8 @@ module private StateHelpers =
 open StateHelpers
 
 type Player =
-    { ///The position of the top left corner of the bounding box
+    { Speed: float32
+      ///The position of the top left corner of the bounding box
       Position: Vector2f
       Radius: float32
       Color: Color }
@@ -24,6 +25,7 @@ type Player =
 type Enemy =
     { ///The position of the top left corner of the bounding box
       Position: Vector2f
+      Speed: float32
       Radius: float32
       AliveColor: Color
       EatenColor: Color
@@ -44,14 +46,12 @@ module LevelState =
 
     ///Calc new position from old position and directional movement
     ///(new pos, true|false wrapped around window)
-    let calcNewPosition (pos: Vector2f) direction (x, y) =
-        let moveUnit = 4f
-
+    let calcNewPosition moveUnit (pos: Vector2f) direction (x, y) =
         let pos' =
             match direction with
             | Up -> Vector2f(pos.X, pos.Y - moveUnit)
             | Left -> Vector2f(pos.X - moveUnit, pos.Y)
-            | Down -> Vector2f(pos.X, pos.Y + 4f)
+            | Down -> Vector2f(pos.X, pos.Y + moveUnit)
             | Right -> Vector2f(pos.X + moveUnit, pos.Y)
 
         let pos'' =
@@ -73,39 +73,40 @@ module LevelState =
 
             r' <= d' && d' <= r''
 
-    let update (boardDimensions: uint * uint) commands state =
-        let pos = state.Player.Position
+    let update (boardDimensions: uint * uint) commands levelState =
+        let pos = levelState.Player.Position
 
         let state =
             match commands.ChangeDirection with
             | Some direction ->
                 let pos, wrapped =
-                    calcNewPosition pos direction boardDimensions
+                    calcNewPosition levelState.Player.Speed pos direction boardDimensions
 
-                { state with
-                      Player = { state.Player with Position = pos }
+                { levelState with
+                      Player = { levelState.Player with Position = pos }
                       WallCrossings =
                           if wrapped then
-                              state.WallCrossings + 1u
-                          else
-                              state.WallCrossings }
-            | None -> state
+                              levelState.WallCrossings + 1u else levelState.WallCrossings }
+            | None -> levelState
 
         let enemies =
             state.Enemies
             //move enemies and reduce radius if needed
             |> Seq.map
                 (fun e ->
-                    match e.Eaten, e.Direction with
-                    | true, _
-                    | _, None -> e
-                    | _, Some (direction) ->
+                    match e.Eaten, e.Direction, e.Speed with
+                    | true, _, _
+                    | _, None, _ -> e
+                    | _, Some (direction), _ ->
                         let pos, _ =
-                            calcNewPosition e.Position direction boardDimensions
+                            calcNewPosition e.Speed e.Position direction boardDimensions
 
                         let radius =
-                            e.Radius
-                            - ((float32 state.ElapsedMs) / 1_000_000f)
+                            if e.Speed > 2f then
+                                e.Radius
+                                - ((float32 state.ElapsedMs) / 1_000_000f)
+                            else
+                                e.Radius
 
                         { e with
                               Position = pos
@@ -123,23 +124,25 @@ module LevelState =
 
         { state with Enemies = enemies }
 
-    let genEnemies (directions: ((Direction option) list)) (rnd: unit -> int) count (x, y) =
+    let genEnemies (rnd: unit -> int) level boardDimensions =
         let radius = 20f
+        let x, y = boardDimensions
         let x = x - ((uint radius) * 2u)
         let y = y - ((uint radius) * 2u)
 
         let genDirection () =
-            let i = rnd () %% directions.Length
-            directions.[i]
+            let i = rnd () %% level.EnemyDirections.Length
+            level.EnemyDirections.[i]
 
         let genRandomCoord c = ((rnd () |> uint) %% c) |> float32
 
-        [ for _ in 1 .. count do
+        [ for _ in 1 .. level.EnemyCount do
               //n.b. circles are drawn from top left corner of bounding box
               let pos =
                   Vector2f(genRandomCoord x, genRandomCoord y)
 
               { Position = pos
+                Speed = level.EnemySpeed
                 AliveColor = Color.Red
                 EatenColor = Color.Blue
                 Eaten = false
@@ -148,9 +151,10 @@ module LevelState =
 
     let init rnd boardDimensions (level: Level) =
 
-        let state =
+        let levelState =
             { Player =
-                  { Position = Vector2f(0f, 0f)
+                  { Speed = 4f
+                    Position = Vector2f(0f, 0f)
                     Color = Color.Green
                     Radius = 10f }
               WallCrossings = 0u
@@ -159,7 +163,7 @@ module LevelState =
               ElapsedMs = 0L }
 
         let state =
-            { state with
-                  Enemies = genEnemies (level.EnemyDirections) rnd state.EnemyCount boardDimensions }
+            { levelState with
+                  Enemies = genEnemies rnd level boardDimensions }
 
         state

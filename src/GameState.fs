@@ -81,8 +81,9 @@ module GameState =
                   StartGame(
                       "Welcome to UFC\n\n\
                      Something strange is going on...\n\
-                     Unidentified Fly Circles have...\n\
-                     been identified!\n\n\n\
+                     Unidentified Flying Circles have...\n\
+                     been identified!\n\n\
+                     -----------------------------------------\n\n\
                      Controls:\n\
                      - Press Enter to Continue between screens\n\
                      - Press ESC to exit at any time\n\
