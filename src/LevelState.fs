@@ -17,7 +17,8 @@ type Player =
       ///The position of the top left corner of the bounding box
       Position: Vector2f
       Radius: float32
-      Color: Color }
+      Color: Color
+      Poisoned: bool }
     ///The position of the center of the circle
     member this.CenterPosition =
         boxPosToCenterPos this.Position this.Radius
@@ -29,6 +30,7 @@ type Enemy =
       Radius: float32
       AliveColor: Color
       EatenColor: Color
+      Poison: bool
       Eaten: bool
       Direction: Direction option }
     ///The position of the center of the circle
@@ -114,7 +116,7 @@ module LevelState =
             //check collisions with player
             |> Seq.map
                 (fun e ->
-                    if e.Eaten then
+                    if e.Eaten || e.Poison then
                         e
                     else
                         let collision = checkCollision state.Player e
@@ -122,7 +124,13 @@ module LevelState =
             |> Seq.filter (fun e -> e.Radius > 0f)
             |> Seq.toList
 
-        { state with Enemies = enemies }
+        let playerPoisoned =
+            enemies
+            |> List.exists (fun e -> e.Poison && checkCollision state.Player e)
+
+        { state with
+            Enemies = enemies
+            Player = { state.Player with Poisoned = playerPoisoned} }
 
     let genEnemies (rnd: unit -> int) level boardDimensions =
         let radius = 20f
@@ -136,17 +144,19 @@ module LevelState =
 
         let genRandomCoord c = ((rnd () |> uint) %% c) |> float32
 
-        [ for _ in 1 .. level.EnemyCount do
+        [ for n in 1 .. level.EnemyCount do
               //n.b. circles are drawn from top left corner of bounding box
               let pos =
                   Vector2f(genRandomCoord x, genRandomCoord y)
 
+              let poison = n <= level.PoisonCount
               { Position = pos
                 Speed = level.EnemySpeed
-                AliveColor = Color.Red
+                AliveColor = if poison then Color.Magenta else Color.Red
                 EatenColor = Color.Blue
                 Eaten = false
                 Radius = radius
+                Poison = poison
                 Direction = genDirection () } ]
 
     let init rnd boardDimensions (level: Level) =
@@ -156,7 +166,8 @@ module LevelState =
                   { Speed = 4f
                     Position = Vector2f(0f, 0f)
                     Color = Color.Green
-                    Radius = 10f }
+                    Radius = 10f
+                    Poisoned = false }
               WallCrossings = 0u
               Enemies = []
               EnemyCount = level.EnemyCount

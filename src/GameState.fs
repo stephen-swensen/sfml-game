@@ -22,14 +22,14 @@ module GameState =
 
     let update rnd levels commands gameState =
         let currentLevel =
-            lazy (levels |> List.item gameState.CurrentLevelIndex)
+            levels |> List.item gameState.CurrentLevelIndex
 
         match gameState.PlayState with
         | StartGame _ when commands.Continue ->
             { gameState with
-                  PlayState = StartLevel(currentLevel.Value.StartText) }
+                  PlayState = StartLevel(currentLevel.StartText) }
         | StartLevel _ when commands.Continue ->
-            let level = currentLevel.Value
+            let level = currentLevel
 
             let levelState =
                 LevelState.init rnd gameState.BoardDimensions level
@@ -43,14 +43,20 @@ module GameState =
             { gameState with
                   PlayState = PausedLevel("Paused", levelState) }
         | ActiveLevel levelState when
+            //all visible enemies are eaten or poison but
+            //the number of enemies on the board does not equal
+            //the enemy level count
             levelState.Enemies
             |> List.forall (fun e -> e.Eaten)
-            && levelState.EnemyCount <> levelState.Enemies.Length ->
+            && (currentLevel.EnemyCount - currentLevel.PoisonCount) <> levelState.Enemies.Length ->
             { gameState with
                   PlayState = EndGame("Game over (you lose): some got away!") }
+        | ActiveLevel levelState when levelState.Player.Poisoned ->
+            { gameState with
+                  PlayState = EndGame("Game over (you lose): you were poisoned!") }
         | ActiveLevel levelState when
             levelState.Enemies
-            |> List.forall (fun e -> e.Eaten) ->
+            |> List.forall (fun e -> e.Poison || e.Eaten) ->
             { gameState with
                   PlayState = EndLevel("You beat the level!") }
         | ActiveLevel levelState ->
@@ -65,12 +71,12 @@ module GameState =
             { gameState with
                   PlayState = EndGame("Game over, you win!!") }
         | EndLevel _ when commands.Continue ->
-            let nextLevel = gameState.CurrentLevelIndex + 1
-            let level = levels |> List.item nextLevel
+            let nextLevelIndex = gameState.CurrentLevelIndex + 1
+            let nextLevel = levels |> List.item nextLevelIndex
 
             { gameState with
-                  CurrentLevelIndex = nextLevel
-                  PlayState = StartLevel level.StartText }
+                  CurrentLevelIndex = nextLevelIndex
+                  PlayState = StartLevel nextLevel.StartText }
         | _ -> gameState
 
     let init levelIndex =
