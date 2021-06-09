@@ -28,8 +28,7 @@ type Enemy =
       Position: Vector2f
       Speed: float32
       Radius: float32
-      AliveColor: Color
-      EatenColor: Color
+      Color: Color
       Poison: bool
       Eaten: bool
       Direction: Direction option }
@@ -41,7 +40,6 @@ type LevelState =
     { Player: Player
       Enemies: Enemy list
       WallCrossings: uint
-      EnemyCount: int
       ElapsedMs: int64 }
 
 module LevelState =
@@ -120,7 +118,13 @@ module LevelState =
                         e
                     else
                         let collision = checkCollision state.Player e
-                        { e with Eaten = collision })
+                        let color =
+                            if collision then
+                                Color.Blue
+                            else
+                                e.Color
+
+                        { e with Eaten = collision; Color = color })
             |> Seq.filter (fun e -> e.Radius > 0f)
             |> Seq.toList
 
@@ -154,8 +158,7 @@ module LevelState =
               let poison = n <= level.PoisonCount
               { Position = pos
                 Speed = level.EnemySpeed
-                AliveColor = if poison then Color.Magenta else Color.Red
-                EatenColor = Color.Blue
+                Color = if poison then Color.Magenta else Color.Red
                 Eaten = false
                 Radius = radius
                 Poison = poison
@@ -172,7 +175,6 @@ module LevelState =
                     Poisoned = false }
               WallCrossings = 0u
               Enemies = []
-              EnemyCount = level.EnemyCount
               ElapsedMs = 0L }
 
         let state =

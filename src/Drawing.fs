@@ -11,11 +11,7 @@ module Drawing =
             use e =
                 new CircleShape(
                     enemy.Radius,
-                    FillColor =
-                        (if enemy.Eaten then
-                             enemy.EatenColor
-                         else
-                             enemy.AliveColor),
+                    FillColor = enemy.Color,
                     Position = enemy.Position
                 )
 
