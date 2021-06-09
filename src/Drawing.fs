@@ -54,8 +54,7 @@ module Drawing =
 
             hudText.DisplayedString <-
                 sprintf
-                    $"Wall Crossings: %u{levelState.WallCrossings},\
-                      Eaten: %i{eatenEnemies},\
+                    $"Eaten: %i{eatenEnemies},\
                       Time: %i{levelState.ElapsedMs / 1000L}s"
 
             hudText.CharacterSize <- 30u
