@@ -65,12 +65,7 @@ module Drawing =
         window.Draw(hudText)
 
     let drawState assets (window: PollableWindow) gameState =
-        match gameState.PlayState with
-        | StartGame text
-        | StartLevel text
-        | PausedLevel (text, _)
-        | EndLevel text
-        | EndGame text ->
+        let drawText text =
             use gtext = new SFML.Graphics.Text()
             gtext.Font <- assets.Fonts.DejaVuSansMono
             gtext.DisplayedString <- text
@@ -78,6 +73,13 @@ module Drawing =
             gtext.Position <- Vector2f(0f, 0f)
             gtext.FillColor <- Color.Green
             window.Draw(gtext)
+
+        match gameState.PlayState with
+        | StartGame text
+        | StartLevel text
+        | EndLevel text
+        | EndGame text ->
+            drawText text
         | ActiveLevel levelState ->
             drawLevelState
                 assets
@@ -86,3 +88,12 @@ module Drawing =
                 gameState.HudHeight
                 gameState.BoardDimensions
                 levelState
+        | PausedLevel (text, levelState) ->
+            drawLevelState
+                assets
+                window
+                gameState.WindowDimensions
+                gameState.HudHeight
+                gameState.BoardDimensions
+                levelState
+            drawText text
