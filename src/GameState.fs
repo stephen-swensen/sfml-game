@@ -17,7 +17,8 @@ type GameState =
       HudHeight: uint
       PlayState: PlayState
       CurrentLevelIndex: int
-      Title: string }
+      Title: string
+      Exiting: bool }
     member this.BoardDimensions =
         let wx, wy = this.WindowDimensions
         wx, wy - this.HudHeight
@@ -29,6 +30,8 @@ module GameState =
             levels |> List.item gameState.CurrentLevelIndex
 
         match gameState.PlayState with
+        | _ when commands.CloseWindow -> { gameState with Exiting = true }
+        | EndGame _ when commands.Continue -> { gameState with Exiting = true }
         | StartGame _ when commands.Continue ->
             { gameState with
                   PlayState = StartLevel(currentLevel.StartText) }
@@ -52,7 +55,8 @@ module GameState =
             //the enemy level count
             levelState.Enemies
             |> List.forall (fun e -> e.Eaten)
-            && (currentLevel.EnemyCount - currentLevel.PoisonCount) <> levelState.Enemies.Length ->
+            && (currentLevel.EnemyCount - currentLevel.PoisonCount)
+               <> levelState.Enemies.Length ->
             { gameState with
                   PlayState = EndGame("You lose: some got away!", levelState, Lose) }
         | ActiveLevel levelState when levelState.Player.Poisoned ->
@@ -103,6 +107,7 @@ module GameState =
                      "
                   )
               CurrentLevelIndex = levelIndex
-              Title = "Unidentified Flying Circles (UFCs)!" }
+              Title = "Unidentified Flying Circles (UFCs)!"
+              Exiting = false }
 
         state

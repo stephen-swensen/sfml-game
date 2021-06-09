@@ -83,10 +83,14 @@ module LevelState =
                     calcNewPosition levelState.Player.Speed pos direction boardDimensions
 
                 { levelState with
-                      Player = { levelState.Player with Position = pos }
+                      Player =
+                          { levelState.Player with
+                                Position = pos }
                       WallCrossings =
                           if wrapped then
-                              levelState.WallCrossings + 1u else levelState.WallCrossings }
+                              levelState.WallCrossings + 1u
+                          else
+                              levelState.WallCrossings }
             | None -> levelState
 
         let enemies =
@@ -118,13 +122,16 @@ module LevelState =
                         e
                     else
                         let collision = checkCollision state.Player e
+
                         let color =
                             if collision then
                                 Color.Blue
                             else
                                 e.Color
 
-                        { e with Eaten = collision; Color = color })
+                        { e with
+                              Eaten = collision
+                              Color = color })
             |> Seq.filter (fun e -> e.Radius > 0f)
             |> Seq.toList
 
@@ -133,8 +140,10 @@ module LevelState =
             |> List.exists (fun e -> e.Poison && checkCollision state.Player e)
 
         { state with
-            Enemies = enemies
-            Player = { state.Player with Poisoned = playerPoisoned} }
+              Enemies = enemies
+              Player =
+                  { state.Player with
+                        Poisoned = playerPoisoned } }
 
     let genEnemies (rnd: unit -> int) level boardDimensions =
         let radius = 20f
@@ -153,12 +162,17 @@ module LevelState =
               let pos =
                   //generate random coords but don't let start in
                   //collision course with player
-                  Vector2f(max (genRandomCoord x) (2f*radius), max (genRandomCoord y) (2f*radius))
+                  Vector2f(max (genRandomCoord x) (2f * radius), max (genRandomCoord y) (2f * radius))
 
               let poison = n <= level.PoisonCount
+
               { Position = pos
                 Speed = level.EnemySpeed
-                Color = if poison then Color.Magenta else Color.Red
+                Color =
+                    if poison then
+                        Color.Magenta
+                    else
+                        Color.Red
                 Eaten = false
                 Radius = radius
                 Poison = poison

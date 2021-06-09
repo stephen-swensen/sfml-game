@@ -37,6 +37,24 @@ module Game =
 
         window, state, commands
 
+    ///Start, Stop, or Reset level stop watch according to game state
+    let controlLevelStopWatch (lsw: Diagnostics.Stopwatch) gameState =
+        match gameState.PlayState with
+        | ActiveLevel _ when lsw.IsRunning |> not -> lsw.Start()
+        | PausedLevel _ when lsw.IsRunning -> lsw.Stop()
+        | EndLevel _ ->
+            lsw.Stop()
+            lsw.Reset()
+        | _ -> ()
+
+    let updateActiveLevelElapsedMs ms gameState =
+        let playState =
+            match gameState.PlayState with
+            | ActiveLevel levelState -> ActiveLevel { levelState with ElapsedMs = ms }
+            | ps -> ps
+
+        { gameState with PlayState = playState }
+
     [<EntryPoint>]
     let main args =
         let levelIndex =
@@ -59,28 +77,13 @@ module Game =
 
                 let gameState =
                     GameState.update rnd assets.Levels commands state
-                //clear out previous commands that shouldn't persist
-                let commands = { commands with Continue = false }
 
-                match gameState.PlayState with
-                | ActiveLevel _ when lsw.IsRunning |> not -> lsw.Start()
-                | PausedLevel _ when lsw.IsRunning -> lsw.Stop()
-                | EndLevel _ ->
-                    lsw.Stop()
-                    lsw.Reset()
-                | _ -> ()
+                controlLevelStopWatch lsw gameState
 
-                let playState =
-                    match gameState.PlayState with
-                    | ActiveLevel levelState ->
-                        ActiveLevel
-                            { levelState with
-                                  ElapsedMs = lsw.ElapsedMilliseconds }
-                    | ps -> ps
+                let gameState =
+                    updateActiveLevelElapsedMs lsw.ElapsedMilliseconds gameState
 
-                let gameState = { gameState with PlayState = playState }
-
-                if commands.CloseWindow then
+                if gameState.Exiting then
                     window.Dispose()
                 else
                     window.Clear()
@@ -88,6 +91,9 @@ module Game =
                     sw.Stop()
                     Console.Write($"World Refresh: %i{sw.ElapsedMilliseconds}ms     \r")
                     window.Display()
+
+                    //clear out previous commands that shouldn't persist
+                    let commands = { commands with Continue = false }
                     loop (window, gameState, commands)
 
         loop world

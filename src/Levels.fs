@@ -53,5 +53,4 @@ module Levels =
                   Some Left
                   Some Right ]
             PoisonCount = 5
-            StartText = "Great balls of fire, this it!!!\n(hold on to your saddle)"
-            } ]
+            StartText = "Great balls of fire, this it!!!\n(hold on to your saddle)" } ]

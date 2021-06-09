@@ -12,28 +12,33 @@ module Drawing =
                 ((snd >> float32) gameState.WindowDimensions)
                 - (float32 gameState.HudHeight)
             )
-        do //draw hud rect
+
+        do
             use hud =
                 new RectangleShape(
                     Vector2f((fst >> float32) gameState.BoardDimensions, float32 gameState.HudHeight),
                     FillColor = Color.Cyan,
                     Position = hudPos
                 )
+
             window.Draw(hud)
 
-        do //draw hud text
+        do
             use hudText = new Text()
+
             let eatenEnemies =
                 levelState.Enemies
                 |> Seq.filter (fun e -> e.Eaten)
                 |> Seq.length
 
             hudText.Font <- assets.Fonts.DejaVuSansMono
+
             hudText.DisplayedString <-
                 sprintf
-                    $"Level: %i{gameState.CurrentLevelIndex+1}/%i{assets.Levels.Length} .. \
-                      Eaten: %i{eatenEnemies} .. \
+                    $"Level: %i{gameState.CurrentLevelIndex + 1}/%i{assets.Levels.Length}   \
+                      Eaten: %i{eatenEnemies}   \
                       Time: %i{levelState.ElapsedMs / 1000L}s"
+
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
             hudText.FillColor <- Color.Black
@@ -43,11 +48,7 @@ module Drawing =
     let drawBoard (window: PollableWindow) levelState =
         for enemy in levelState.Enemies do
             use e =
-                new CircleShape(
-                    enemy.Radius,
-                    FillColor = enemy.Color,
-                    Position = enemy.Position
-                )
+                new CircleShape(enemy.Radius, FillColor = enemy.Color, Position = enemy.Position)
 
             window.Draw(e)
 
@@ -73,9 +74,8 @@ module Drawing =
 
         match gameState.PlayState with
         | StartGame text
-        | StartLevel text ->
-            drawText text
-        | EndGame(text, levelState, _)
+        | StartLevel text -> drawText text
+        | EndGame (text, levelState, _)
         | EndLevel (text, levelState) ->
             drawHud assets window gameState levelState
             drawText text
