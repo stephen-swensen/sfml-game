@@ -147,7 +147,9 @@ module LevelState =
         [ for n in 1 .. level.EnemyCount do
               //n.b. circles are drawn from top left corner of bounding box
               let pos =
-                  Vector2f(genRandomCoord x, genRandomCoord y)
+                  //generate random coords but don't let start in
+                  //collision course with player
+                  Vector2f(max (genRandomCoord x) (2f*radius), max (genRandomCoord y) (2f*radius))
 
               let poison = n <= level.PoisonCount
               { Position = pos
