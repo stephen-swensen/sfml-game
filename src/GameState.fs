@@ -1,12 +1,16 @@
 namespace Swensen.SFML.Game
 
+type Outcome =
+    | Win
+    | Lose
+
 type PlayState =
     | StartGame of string
     | StartLevel of string
     | ActiveLevel of LevelState
     | PausedLevel of string * LevelState
-    | EndLevel of string
-    | EndGame of string
+    | EndLevel of string * LevelState
+    | EndGame of string * LevelState * Outcome
 
 type GameState =
     { WindowDimensions: uint * uint
@@ -50,26 +54,26 @@ module GameState =
             |> List.forall (fun e -> e.Eaten)
             && (currentLevel.EnemyCount - currentLevel.PoisonCount) <> levelState.Enemies.Length ->
             { gameState with
-                  PlayState = EndGame("Game over (you lose): some got away!") }
+                  PlayState = EndGame("Game over (you lose): some got away!", levelState, Lose) }
         | ActiveLevel levelState when levelState.Player.Poisoned ->
             { gameState with
-                  PlayState = EndGame("Game over (you lose): you were poisoned!") }
+                  PlayState = EndGame("Game over (you lose): you were poisoned!", levelState, Lose) }
         | ActiveLevel levelState when
             levelState.Enemies
             |> List.forall (fun e -> e.Poison || e.Eaten) ->
             { gameState with
-                  PlayState = EndLevel("You beat the level!") }
+                  PlayState = EndLevel("You beat the level!", levelState) }
         | ActiveLevel levelState ->
             let levelState' =
                 LevelState.update gameState.BoardDimensions commands levelState
 
             { gameState with
                   PlayState = ActiveLevel levelState' }
-        | EndLevel _ when
+        | EndLevel(_, levelState) when
             commands.Continue
             && gameState.CurrentLevelIndex = (levels.Length - 1) ->
             { gameState with
-                  PlayState = EndGame("Game over, you win!!") }
+                  PlayState = EndGame("Game over, you win!!", levelState, Win) }
         | EndLevel _ when commands.Continue ->
             let nextLevelIndex = gameState.CurrentLevelIndex + 1
             let nextLevel = levels |> List.item nextLevelIndex

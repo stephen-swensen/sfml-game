@@ -4,9 +4,44 @@ open SFML.System
 open SFML.Graphics
 
 module Drawing =
+    ///Draw the heads up display
+    let drawHud assets (window: PollableWindow) gameState levelState =
+        let hudPos =
+            Vector2f(
+                0f,
+                ((snd >> float32) gameState.WindowDimensions)
+                - (float32 gameState.HudHeight)
+            )
+        do //draw hud rect
+            use hud =
+                new RectangleShape(
+                    Vector2f((fst >> float32) gameState.BoardDimensions, float32 gameState.HudHeight),
+                    FillColor = Color.Cyan,
+                    Position = hudPos
+                )
+            window.Draw(hud)
 
-    /// Draw active level state to the Window (but don't clear or draw the window itself)
-    let drawLevelState assets (window: PollableWindow) winDimensions hudHeight boardDimensions levelState =
+        do //draw hud text
+            use hudText = new Text()
+            let eatenEnemies =
+                levelState.Enemies
+                |> Seq.filter (fun e -> e.Eaten)
+                |> Seq.length
+
+            hudText.Font <- assets.Fonts.DejaVuSansMono
+
+            hudText.DisplayedString <-
+                sprintf
+                    $"Eaten: %i{eatenEnemies},\
+                      Time: %i{levelState.ElapsedMs / 1000L}s"
+
+            hudText.CharacterSize <- 30u
+            hudText.Position <- hudPos
+            hudText.FillColor <- Color.Black
+            window.Draw(hudText)
+
+    ///Draw players and enemies on the board
+    let drawBoard (window: PollableWindow) levelState =
         for enemy in levelState.Enemies do
             use e =
                 new CircleShape(
@@ -26,46 +61,10 @@ module Drawing =
 
         window.Draw(player)
 
-        let hudPos =
-            Vector2f(
-                0f,
-                ((snd >> float32) winDimensions)
-                - (float32 hudHeight)
-            )
-
-        use hud =
-            new RectangleShape(
-                Vector2f((fst >> float32) boardDimensions, float32 hudHeight),
-                FillColor = Color.Cyan,
-                Position = hudPos
-            )
-
-        window.Draw(hud)
-
-        use hudText = new SFML.Graphics.Text()
-
-        do
-            let eatenEnemies =
-                levelState.Enemies
-                |> Seq.filter (fun e -> e.Eaten)
-                |> Seq.length
-
-            hudText.Font <- assets.Fonts.DejaVuSansMono
-
-            hudText.DisplayedString <-
-                sprintf
-                    $"Eaten: %i{eatenEnemies},\
-                      Time: %i{levelState.ElapsedMs / 1000L}s"
-
-            hudText.CharacterSize <- 30u
-            hudText.Position <- hudPos
-            hudText.FillColor <- Color.Black
-
-        window.Draw(hudText)
-
+    /// Draw active level state to the Window (but don't clear or draw the window itself)
     let drawState assets (window: PollableWindow) gameState =
         let drawText text =
-            use gtext = new SFML.Graphics.Text()
+            use gtext = new Text()
             gtext.Font <- assets.Fonts.DejaVuSansMono
             gtext.DisplayedString <- text
             gtext.CharacterSize <- 30u
@@ -76,23 +75,16 @@ module Drawing =
         match gameState.PlayState with
         | StartGame text
         | StartLevel text
-        | EndLevel text
-        | EndGame text ->
+        | EndGame(text, _, Win) ->
+            drawText text
+        | EndGame(text, levelState, Lose)
+        | EndLevel (text, levelState) ->
+            drawHud assets window gameState levelState
             drawText text
         | ActiveLevel levelState ->
-            drawLevelState
-                assets
-                window
-                gameState.WindowDimensions
-                gameState.HudHeight
-                gameState.BoardDimensions
-                levelState
+            drawBoard window levelState
+            drawHud assets window gameState levelState
         | PausedLevel (text, levelState) ->
-            drawLevelState
-                assets
-                window
-                gameState.WindowDimensions
-                gameState.HudHeight
-                gameState.BoardDimensions
-                levelState
+            drawBoard window levelState
+            drawHud assets window gameState levelState
             drawText text
