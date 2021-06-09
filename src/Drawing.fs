@@ -29,12 +29,11 @@ module Drawing =
                 |> Seq.length
 
             hudText.Font <- assets.Fonts.DejaVuSansMono
-
             hudText.DisplayedString <-
                 sprintf
-                    $"Eaten: %i{eatenEnemies},\
+                    $"Level: %i{gameState.CurrentLevelIndex+1}/%i{assets.Levels.Length} .. \
+                      Eaten: %i{eatenEnemies} .. \
                       Time: %i{levelState.ElapsedMs / 1000L}s"
-
             hudText.CharacterSize <- 30u
             hudText.Position <- hudPos
             hudText.FillColor <- Color.Black

@@ -54,19 +54,19 @@ module GameState =
             |> List.forall (fun e -> e.Eaten)
             && (currentLevel.EnemyCount - currentLevel.PoisonCount) <> levelState.Enemies.Length ->
             { gameState with
-                  PlayState = EndGame("Game over (you lose): some got away!", levelState, Lose) }
+                  PlayState = EndGame("You lose: some got away!", levelState, Lose) }
         | ActiveLevel levelState when levelState.Player.Poisoned ->
             { gameState with
-                  PlayState = EndGame("Game over (you lose): you were poisoned!", levelState, Lose) }
+                  PlayState = EndGame("You lose: you were poisoned!", levelState, Lose) }
         | ActiveLevel levelState when
             levelState.Enemies
             |> List.forall (fun e -> e.Poison || e.Eaten) ->
             if gameState.CurrentLevelIndex = (levels.Length - 1) then
                 { gameState with
-                      PlayState = EndGame("Game over, you win!!", levelState, Win) }
+                      PlayState = EndGame("You win!!", levelState, Win) }
             else
                 { gameState with
-                      PlayState = EndLevel("You beat the level!", levelState) }
+                      PlayState = EndLevel("You did it!!", levelState) }
         | ActiveLevel levelState ->
             let levelState' =
                 LevelState.update gameState.BoardDimensions commands levelState
