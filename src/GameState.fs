@@ -61,19 +61,18 @@ module GameState =
         | ActiveLevel levelState when
             levelState.Enemies
             |> List.forall (fun e -> e.Poison || e.Eaten) ->
-            { gameState with
-                  PlayState = EndLevel("You beat the level!", levelState) }
+            if gameState.CurrentLevelIndex = (levels.Length - 1) then
+                { gameState with
+                      PlayState = EndGame("Game over, you win!!", levelState, Win) }
+            else
+                { gameState with
+                      PlayState = EndLevel("You beat the level!", levelState) }
         | ActiveLevel levelState ->
             let levelState' =
                 LevelState.update gameState.BoardDimensions commands levelState
 
             { gameState with
                   PlayState = ActiveLevel levelState' }
-        | EndLevel(_, levelState) when
-            commands.Continue
-            && gameState.CurrentLevelIndex = (levels.Length - 1) ->
-            { gameState with
-                  PlayState = EndGame("Game over, you win!!", levelState, Win) }
         | EndLevel _ when commands.Continue ->
             let nextLevelIndex = gameState.CurrentLevelIndex + 1
             let nextLevel = levels |> List.item nextLevelIndex

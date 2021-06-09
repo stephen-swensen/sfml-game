@@ -74,10 +74,9 @@ module Drawing =
 
         match gameState.PlayState with
         | StartGame text
-        | StartLevel text
-        | EndGame(text, _, Win) ->
+        | StartLevel text ->
             drawText text
-        | EndGame(text, levelState, Lose)
+        | EndGame(text, levelState, _)
         | EndLevel (text, levelState) ->
             drawHud assets window gameState levelState
             drawText text
