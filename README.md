@@ -8,6 +8,6 @@ Learning SFML.NET with F#
 
 ## Play
 
-While SFML is itself cross-platform, and SFML.NET too ostensibly, there is a bug in the SFML.NET packages which makes building for differnet platforms cumbersome. Therfoer, at this time, only Linux is supported:
+While SFML is itself cross-platform, and SFML.NET too ostensibly, there is a bug in the SFML.NET packages which makes building for differnet platforms cumbersome. Therefore, at this time, only Linux is supported:
 
 From bash, just type `make` to run the program.
