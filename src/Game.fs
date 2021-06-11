@@ -10,8 +10,8 @@ type World = PollableWindow * GameState * InputCommands
 
 module Game =
     let rnd =
+        let r = new Random()
         fun () ->
-            let r = new Random()
             r.Next()
 
     ///Create the World with a BIG BANG
